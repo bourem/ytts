@@ -1,0 +1,23 @@
+{% load staticfiles %}
+<!doctype html>
+<html>
+    <head>
+        <!--script type="text/javascript" src="{% static "ytts/main.js" %}"></script-->
+        <link rel="stylesheet" href="{% static "ytts/main.css" %}"></link>
+    </head>
+    <body>
+        <h1>Timestamper</h1>
+        <div id="ytplayer"></div>
+
+        <div id="timestampBar">
+            <div id="timestampBarNow"></div>
+        </div>
+
+        <div id="subtitles">
+            {% for subtitle in subtitles %}
+                <p>{{ subtitle.subtitle }}</p>
+            {% endfor %}
+        </div>
+
+    </body>
+</html>

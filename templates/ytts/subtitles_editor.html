@@ -1,0 +1,47 @@
+{% load staticfiles %}
+<!doctype html>
+<html>
+    <head>
+        {% if subtitles %}
+        <script>
+            var initSubtitles = {{ subtitles|safe }}; </script>
+        <script type="text/javascript" src="{% static "ytts/main.js" %}" async defer></script>
+        {% endif %}
+        <link rel="stylesheet" href="{% static "ytts/main.css" %}" />
+    </head>
+    <body>
+        <h1>Timestamper</h1>
+
+        <div id="ytplayer" data-initvideoid="{{ video_id }}"></div>
+
+        <div id="timestampBar">
+            <div id="timestampBarNow"></div>
+        </div>
+
+        <div id="activeLine">
+        </div>
+
+        <div id="subtitlesControls">
+            <button id="subtitleControlAdd">Add subtitle</button>
+            <button id="subtitleControlSave">Save subtitle</button>
+            <a href="" id="subtitleControlDownload" download="subtitles.srt">DL</a>
+        </div>
+
+        <div id="subtitles">
+        </div>
+
+        <template id="subtitleTemplate">
+        <div class="subtitle" data-subtitle='true'>
+            <div data-subtitleinsert="before" draggable="true" ondragover="ytts.dragover_handler(event)" ondrop="ytts.drop_handler(event)" ondragstart="ytts.dragstartSubtitle(event)"></div>
+            <textarea data-subtitletext></textarea>
+            <input type="text" data-subtitlestart />
+            <input type="text" data-subtitlestop />
+            <button onclick="ytts.setStart(event)">Start here</button>
+            <button onclick="ytts.setStop(event)">Stop here</button>
+            <button onclick="ytts.setCursorSubtitle(event)">Position in Video</button>
+            <div data-subtitleinsert="after" draggable="true" ondragover="ytts.dragover_handler(event)" ondrop="ytts.drop_handler(event)" ondragstart="ytts.dragstartSubtitle(event)"></div>
+        </div>
+        </template>
+        
+    </body>
+</html>
