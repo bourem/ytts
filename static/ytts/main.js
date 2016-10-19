@@ -166,13 +166,17 @@ ytts.initEventListeners = function() {
         xhr.setRequestHeader("X-CSRFToken", csrftoken);
         
         xhr.onreadystatechange = function() {
-            if(xhr.readyState == 4 && xhr.status == 200) {
-                console.log(xhr.response);
+            if(xhr.readyState == 4) {
+                document.getElementById("savingFeedback").style.display = "none";
+                if(xhr.status == 200) {
+                    console.log(xhr.response);
+                }
             }
         };
         
         //var subtitlesJson = [{"subtitle":"blahblah", "start":"00:00:00.0", "stop":"00:00:00.0"},{"subtitle":"blehbleh", "start":"00:00:00.0", "stop":"00:00:00.0"}];
         var subtitlesJSON = ytts.buildSubsJSON();
+        document.getElementById("savingFeedback").style.display = "block";
         xhr.send('subtitles_json='+JSON.stringify(subtitlesJSON));
     }
 

@@ -51,3 +51,12 @@
 .highlightedSubtitle {
     background-color: #98CECA;
 }
+
+#savingFeedback {
+    background-color: black;
+    color: white;
+    position: fixed;
+    top: 4em;
+    right: 4em;
+    padding: .3em;
+}
