@@ -63,7 +63,7 @@ ytts.initEventListeners = function() {
                 if(!isLineTimerActive) {
                     activeLineTimer = setInterval(
                             function(){
-                                ytts.displayActiveLine(player.getCurrentTime());
+                                ytts.displaySubtitlesAt(player.getCurrentTime());
                             }, 
                             200);
                     
@@ -233,9 +233,14 @@ ytts.initEventListeners = function() {
         tsBarNow.style.left = percentage + "%";
     };
     ytts.setCursorTime = function(time) {
-        tsBarNow.style.left = timeToSeconds(time)*100/videoLength + "%";
+        seconds = timeToSeconds(time);
+        tsBarNow.style.left = seconds*100/videoLength + "%";
+        player.playVideo();
+        player.seekTo(seconds);
+        player.pauseVideo();
+        ytts.displaySubtitlesAt(seconds);
     };
-    ytts.setCursorSubtitle = function(ev) {
+    ytts.setCursorAtSubtitle = function(ev) {
         var subtitleStart = ev.target.parentNode.querySelector("[data-subtitlestart]").value;
         if (!subtitleStart) {
             subtitleStart = "00:00:00";
@@ -243,7 +248,7 @@ ytts.initEventListeners = function() {
         ytts.setCursorTime(subtitleStart);
     };
 
-    ytts.displayActiveLine = function(seconds) {
+    ytts.displaySubtitlesAt = function(seconds) {
         var lines = ytts.getActiveLines(seconds),
             activeLine = document.getElementById("activeLine");
         ytts.unhighlightSubtitles();
