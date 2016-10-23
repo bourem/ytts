@@ -1,7 +1,7 @@
-{% load staticfiles %}
-<!doctype html>
+{% load staticfiles %}<!doctype html>
 <html>
     <head>
+        <title>YTTS</title>
         {% if subtitles %}
         <script>
             var initSubtitles = {{ subtitles|safe }}; </script>
@@ -11,6 +11,13 @@
     </head>
     <body>
         <h1>Timestamper</h1>
+
+        <div id="subtitles_versions">
+            Available versions
+            <select name="version">{% for v in versions %}
+                <option value="{{ v }}">{{ v }}</option>{% endfor %}
+            </select>
+        </div>
 
         <div id="ytplayer" data-initvideoid="{{ video_id }}"></div>
 

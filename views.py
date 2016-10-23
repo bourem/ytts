@@ -5,25 +5,49 @@ import json
 
 from .models import Subtitles
 
-def get_subtitles_from_video(video_id):
-    sub_len = Subtitles.objects.filter(video_id=video_id).count()
-    print(sub_len)
+def get_subtitles_from_video(video_id, version_name = None):
+    """ Return one subtitles version.
+    The desc order of preference for the chosen subtitles version is: 
+    version_name, is_default_version, first subtitle in the list.
+    """
+    subs = Subtitles.objects.filter(video_id=video_id)
+    sub_len = subs.count()
     if sub_len == 0:
-        subs = None
+        return None
     elif sub_len == 1:
-        subs = Subtitles.objects.filter(video_id=video_id).get()
+        subs = subs.get()
+        if not subs.is_default_version:
+            subs.is_default_version = True
+            subs.save()
     elif sub_len > 1:
-        # TODO: actual logic for multiple existing subtitles
-        subs = Subtitles.objects.filter(video_id=video_id)[0]
-    if subs:
-        subs = json.loads(subs.subtitles_json)
-        if subs.get("is_valid_checked", False):
-            return subs.get("subtitles", None)
-    return None
+        if version_name:
+            version_subs = Subtitles.objects.filter(
+                    video_id=video_id,
+                    version_name=version_name)
+            if version_subs.count() >= 1:
+                subs = version_subs[0]
+            else:
+                default_subs = Subtitles.objects.filter(
+                        video_id=video_id,
+                        is_default_version=True)
+                if default_subs.count() >= 1:
+                    subs = default_subs[0]
+                else:
+                    subs = subs[0]
+    subs = json.loads(subs.subtitles_json)
+    if subs.get("is_valid_checked", False):
+        return subs.get("subtitles", None)
+    else:
+        return None
+
+def get_subtitles_versions(video_id):
+    return Subtitles.objects.values_list('version_name', 
+            flat=True).filter(video_id=video_id)
 
 def subtitles_editor(request, video_id):
     context = {'video_id': video_id, 
-            'subtitles': get_subtitles_from_video(video_id)}
+            'subtitles': get_subtitles_from_video(video_id),
+            'versions': get_subtitles_versions(video_id)}
     print(context)
     return render(request, 'ytts/subtitles_editor.html', context)
 
