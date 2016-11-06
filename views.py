@@ -117,7 +117,12 @@ def save_subtitles(subtitles, video_id, version_name):
 
 
 def subtitles_loader(request, video_id):
-    return JsonResponse(get_subtitles_from_video(video_id), safe=False)
+    version_name = request.GET.get('version', None)
+    return JsonResponse(
+            get_subtitles_from_video(
+                video_id, 
+                version_name=version_name), 
+            safe=False)
 
 def is_valid_subtitles(subtitles):
     return True
