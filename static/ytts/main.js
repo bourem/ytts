@@ -17,7 +17,9 @@ ytts.initEventListeners = function() {
 //        .addEVentListener("dragstart", function(e){ytts.dragstartSubtitle(e)});
 };
 
-//(function() {
+(function() {
+
+    ytts.currentVersion = initVersion;
 
     // Youtube iFrame API loading
     var tag = document.createElement('script');
@@ -46,7 +48,6 @@ ytts.initEventListeners = function() {
     }
 
     function onPlayerReady(event) {
-        //event.target.playVideo();
         videoLength = event.target.getDuration();
     }
 
@@ -58,7 +59,7 @@ ytts.initEventListeners = function() {
                 // TODO: PLAYING events are called repeatedly when
                 // the video is playing. We should analyze how
                 // often it is fired. Might be better to call 
-                // displayActiveLine  for each PLAYING event, 
+                // displayActiveLine for each PLAYING event, 
                 // instead of using setInterval.
                 if(!isLineTimerActive) {
                     activeLineTimer = setInterval(
@@ -177,7 +178,7 @@ ytts.initEventListeners = function() {
         //var subtitlesJson = [{"subtitle":"blahblah", "start":"00:00:00.0", "stop":"00:00:00.0"},{"subtitle":"blehbleh", "start":"00:00:00.0", "stop":"00:00:00.0"}];
         var subtitlesJSON = ytts.buildSubsJSON();
         document.getElementById("savingFeedback").style.display = "block";
-        xhr.send('subtitles_json='+JSON.stringify(subtitlesJSON));
+        xhr.send('subtitles_json='+JSON.stringify(subtitlesJSON)+'&version_name='+initVersion);
     }
 
     // TODO: change function signature or name.
@@ -315,4 +316,4 @@ ytts.initEventListeners = function() {
     }
 
     ytts.initEventListeners();
-//}());
+}());

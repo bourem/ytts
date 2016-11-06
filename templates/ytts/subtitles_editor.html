@@ -4,17 +4,23 @@
         <title>YTTS</title>
         {% if subtitles %}
         <script>
-            var initSubtitles = {{ subtitles|safe }}; </script>
+            var initSubtitles = {{ subtitles.subtitles|safe }};
+            var initIsDefault = {{ subtitles.is_default_version|yesno:"true,false" }};
+            var initVersion = "{{ subtitles.version }}";
+            var initVersions = {{ all_versions|safe }};
+        </script>
         <script type="text/javascript" src="{% static "ytts/main.js" %}" async defer></script>
         {% endif %}
         <link rel="stylesheet" href="{% static "ytts/main.css" %}" />
     </head>
     <body>
         <h1>Timestamper</h1>
+        
+        {% if subtitles %}<div id="current_version">Loaded version: <span id="current_version_name">{{ subtitles.version }}</span></div>{% endif %}
 
         <div id="subtitles_versions">
             Available versions
-            <select name="version">{% for v in versions %}
+            <select name="version">{% for v in all_versions %}
                 <option value="{{ v }}">{{ v }}</option>{% endfor %}
             </select>
         </div>
