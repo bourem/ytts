@@ -5,7 +5,10 @@ import json
 
 from .models import *
 
-def get_subtitles_from_video(video_id, version_name = None):
+def get_subtitles_from_video(
+        video_id, 
+        version_name = None, 
+        version_strict=False):
     """ Return a subtitles version attached to this video_id.
     Order of preference is: same version_name, default
     subtitles, first subtitles from DB.
@@ -17,12 +20,14 @@ def get_subtitles_from_video(video_id, version_name = None):
         return None
     # Then check if we have a version with the given
     # version name.
-    if version_name:
+    if version_name is not None:
         version_subs = Subtitles.objects.filter(
                 video__video_id=video_id,
                 version_name=version_name)
         if version_subs.count() == 1:
             return version_subs.get()
+    if version_strict:
+        return None
     # Then check if we have a default version
     video = Video.objects.filter(video_id=video_id)
     if video.count() == 1:
@@ -117,12 +122,17 @@ def save_subtitles(subtitles, video_id, version_name):
 
 
 def subtitles_loader(request, video_id):
-    version_name = request.GET.get('version', None)
-    return JsonResponse(
-            get_subtitles_from_video(
-                video_id, 
-                version_name=version_name), 
-            safe=False)
+    version_name = request.GET.get('version_name', None)
+    subs = get_subtitles_from_video(
+            video_id,
+            version_name=version_name,
+            version_strict=True)
+    if not subs:
+        return JsonResponse(None, safe=False)
+    else:
+        return JsonResponse(
+                json.loads(subs.subtitles_json).get("subtitles"),
+                safe=False)
 
 def is_valid_subtitles(subtitles):
     return True

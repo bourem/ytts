@@ -298,6 +298,30 @@ ytts.initEventListeners = function() {
         }
         return activeLines;
     };
+
+    ytts.loadSubtitle = function(version_name) {
+        var xhr = new XMLHttpRequest();
+        var url = "/ytts/" + videoId + "/load/";
+        xhr.open("GET", url + "?version_name=" + version_name, true);
+        xhr.responseType = "json";
+        
+        xhr.onreadystatechange = function() {
+            if(xhr.readyState == 4) {
+                if(xhr.status == 200) {
+                    var new_subs = xhr.response;
+                    console.log(new_subs);
+                    if(new_subs) {
+                        document.getElementById("current_version_name").innerHTML = version_name;
+                    }
+                }
+            }
+        };
+        xhr.send(null);
+    };
+
+    ytts.loadVideo = function(video_id) {
+        ytts.loadSubtitle();
+    }
     
     function getCookie(name) {
         var cookieValue = null;
