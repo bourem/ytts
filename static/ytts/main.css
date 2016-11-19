@@ -60,3 +60,7 @@
     right: 4em;
     padding: .3em;
 }
+
+.warning {
+    background-color: #ffafaf;
+}

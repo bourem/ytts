@@ -8,6 +8,25 @@ ytts.initEventListeners = function() {
         .addEventListener("click", ytts.saveSubtitles); 
     document.getElementById("subtitleControlDownload")
         .addEventListener("click", function(e){ytts.downloadSubtitles(e)});
+    document.getElementById("versionControlLoad")
+        .addEventListener("click", function() {
+            var versionToLoad = document.getElementById("versionToLoad")
+                .value;
+            if(versionToLoad != ytts.currentVersion) {
+                ytts.loadSubtitles(versionToLoad);
+            }
+        });
+    document.getElementById("versionControlCreate")
+        .addEventListener("click", function() {
+            var versionToCreate = document.getElementById("versionToCreate")
+                .value;
+            var isClone = document.getElementById("versionIsClone").checked;
+            var clonedFrom = null;
+            if(isClone) {
+                var clonedFrom = ytts.currentVersion;
+            }
+            ytts.createSubtitles(versionToCreate, clonedFrom);
+        });
 
     // Subtitles template - some pb with template node and eventlisteners
 //    var template = document.getElementById("subtitleTemplate");
@@ -178,7 +197,7 @@ ytts.initEventListeners = function() {
         //var subtitlesJson = [{"subtitle":"blahblah", "start":"00:00:00.0", "stop":"00:00:00.0"},{"subtitle":"blehbleh", "start":"00:00:00.0", "stop":"00:00:00.0"}];
         var subtitlesJSON = ytts.buildSubsJSON();
         document.getElementById("savingFeedback").style.display = "block";
-        xhr.send('subtitles_json='+JSON.stringify(subtitlesJSON)+'&version_name='+initVersion);
+        xhr.send('subtitles_json='+JSON.stringify(subtitlesJSON)+'&version_name='+ytts.currentVersion);
     }
 
     // TODO: change function signature or name.
@@ -299,7 +318,7 @@ ytts.initEventListeners = function() {
         return activeLines;
     };
 
-    ytts.loadSubtitle = function(version_name) {
+    ytts.loadSubtitles = function(version_name) {
         var xhr = new XMLHttpRequest();
         var url = "/ytts/" + videoId + "/load/";
         xhr.open("GET", url + "?version_name=" + version_name, true);
@@ -312,11 +331,37 @@ ytts.initEventListeners = function() {
                     console.log(new_subs);
                     if(new_subs) {
                         document.getElementById("current_version_name").innerHTML = version_name;
+                        ytts.currentVersion = version_name;
+                        ytts.updateSubtitlesView(new_subs);
                     }
                 }
             }
         };
         xhr.send(null);
+    };
+
+    ytts.createSubtitles = function(versionToCreate, clonedFrom) {
+        document.getElementById("current_version_name")
+            .innerHTML = versionToCreate;
+        ytts.currentVersion = versionToCreate;
+        if(!clonedFrom) {
+            ytts.clearSubtitlesView();
+        }
+        ytts.saveSubtitles();
+    };
+
+    ytts.updateSubtitlesView = function(subtitles_json) {
+        ytts.clearSubtitlesView();
+        var tmp_sub;
+        for(var i=0; i<subtitles_json.length; i++) {
+            tmp_sub = subtitles_json[i];
+            console.log(tmp_sub);
+            ytts.addSubtitle(tmp_sub);
+        }
+    };
+
+    ytts.clearSubtitlesView = function() {
+        document.getElementById("subtitles").innerHTML = "";
     };
 
     ytts.loadVideo = function(video_id) {

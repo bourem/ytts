@@ -18,11 +18,19 @@
         
         {% if subtitles %}<div id="current_version">Loaded version: <span id="current_version_name">{{ subtitles.version }}</span></div>{% endif %}
 
-        <div id="subtitles_versions">
-            Available versions
-            <select name="version">{% for v in all_versions %}
+        <div id="subtitlesVersions">
+            <div>Available versions
+            <select name="version" id="versionToLoad">{% for v in all_versions %}
                 <option value="{{ v }}">{{ v }}</option>{% endfor %}
             </select>
+            <button id="versionControlLoad">Load Version</button><span class="warning">If you decide to load another version the current work will be lost</span>
+            </div>
+            <div>
+                Create new version: 
+                <input id="versionToCreate" type="text" maxlength="20" placeholder="name (max 20 chars)">
+                Clone current:<input id="versionIsClone" type="checkbox" value="clone">
+                <button id="versionControlCreate">Create New Version</button>
+            </div>
         </div>
 
         <div id="ytplayer" data-initvideoid="{{ video_id }}"></div>
@@ -37,7 +45,7 @@
         <div id="subtitlesControls">
             <button id="subtitleControlAdd">Add subtitle</button>
             <button id="subtitleControlSave">Save subtitle</button>
-            <a href="" id="subtitleControlDownload" download="subtitles.srt">DL</a>
+            <a href="" id="subtitleControlDownload" download="subtitles.srt">DL (SubRip)</a>
         </div>
 
         <div id="subtitles">

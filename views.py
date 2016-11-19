@@ -91,27 +91,22 @@ def subtitles_saver(request, video_id):
         return JsonResponse({'status':"INVALID_SUBTITLES", 'comment':""})
 
 def save_subtitles(subtitles, video_id, version_name):
+    """ Save subtitles on given video and with given version_name """
+    # Grab video. If Video does not exist then create.
+    video = Video.objects.filter(video_id = video_id)
+    if video.count() == 0:
+        video = Video(video_id=video_id, default_subtitles=version_name)
+        video.save()
+    else:
+        video = video.get()
+
     subs = Subtitles.objects.filter(
-            video__video_id=video_id, 
+            video=video, 
             version_name=version_name)
     sub_len = subs.count()
-    if sub_len == 0:
-        # check if default version already exists
-        is_default = (Subtitles.objects.filter(
-                video_id=video_id,
-                is_default_version=True).count() == 0)
-        subs = Subtitles(
-                video_id=video_id, 
-                subtitles_json=json.dumps({
-                    "is_valid_checked": True, 
-                    "subtitles": subs_json
-                    }),
-                version_name=version_name,
-                is_default=default
-                )
-        subs.save()
-        return {'status':"OK", 'comment':"NEW"}
-    elif sub_len > 0:
+
+    # Save subtitles. If Subtitle exists then override, else create.
+    if sub_len > 0:
         subs = subs.get()
         subs.subtitles_json = json.dumps({
             "is_valid_checked": True,
@@ -119,6 +114,17 @@ def save_subtitles(subtitles, video_id, version_name):
             })
         subs.save()
         return {'status':"OK", 'comment':"OVERRIDEN"}
+    elif sub_len == 0:
+        subs = Subtitles(
+                video=video, 
+                subtitles_json=json.dumps({
+                    "is_valid_checked": True, 
+                    "subtitles": subtitles
+                    }),
+                version_name=version_name,
+                )
+        subs.save()
+        return {'status':"OK", 'comment':"NEW"}
 
 
 def subtitles_loader(request, video_id):
