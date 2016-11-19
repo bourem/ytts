@@ -44,6 +44,7 @@ def get_subtitles_versions(video_id):
 def subtitles_editor(request, video_id):
     version_name = request.GET.get('version', None)
     subs = get_subtitles_from_video(video_id, version_name)
+    subtitles = {}
     if subs:
         subtitles = {
                     'subtitles': json.loads(subs.subtitles_json)\

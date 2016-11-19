@@ -12,11 +12,18 @@ class Subtitles(models.Model):
     class Meta:
         unique_together = (("video", "version_name"))
 
+    def __str__(self):
+        return "%s - %s"%(self.video.video_id, self.version_name)
+
 class Video(models.Model):
     video_id = models.CharField(max_length=20, unique=True)
     default_subtitles = models.ForeignKey(
             "Subtitles", 
             on_delete=models.SET_NULL,
             null=True,
+            default=None,
+            blank=True,
             related_name='+')
 
+    def __str__(self):
+        return "%s"%(self.video_id)
