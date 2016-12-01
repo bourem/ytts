@@ -7,7 +7,7 @@ from .models import *
 
 def get_subtitles_from_video(
         video_id, 
-        version_name = None, 
+        version_name=None, 
         version_strict=False):
     """ Return a subtitles version attached to this video_id.
     Order of preference is: same version_name, default
@@ -36,7 +36,7 @@ def get_subtitles_from_video(
             return default_subs
     # Then take one of the available subtitles
     return subs[0]
-        
+
 def get_subtitles_versions(video_id):
     return Subtitles.objects.values_list('version_name', 
             flat=True).filter(video__video_id=video_id)
@@ -45,12 +45,21 @@ def subtitles_editor(request, video_id):
     version_name = request.GET.get('version', None)
     subs = get_subtitles_from_video(video_id, version_name)
     subtitles = {}
-    if subs:
+    if subs is not None:
         subtitles = {
                     'subtitles': json.loads(subs.subtitles_json)\
                             .get("subtitles"),
                     'is_default_version': subs.is_default_version,
                     'version': subs.version_name
+                    }
+    else:
+        if version_name is None:
+            version_name = "default"
+        save_subtitles([], video_id, version_name)
+        subtitles = {
+                    'subtitles': [],
+                    'is_default_version': True,
+                    'version': version_name
                     }
     context = {
             'video_id': video_id, 
@@ -96,7 +105,7 @@ def save_subtitles(subtitles, video_id, version_name):
     # Grab video. If Video does not exist then create.
     video = Video.objects.filter(video_id = video_id)
     if video.count() == 0:
-        video = Video(video_id=video_id, default_subtitles=version_name)
+        video = Video(video_id=video_id, default_subtitles=None)
         video.save()
     else:
         video = video.get()
@@ -125,6 +134,9 @@ def save_subtitles(subtitles, video_id, version_name):
                 version_name=version_name,
                 )
         subs.save()
+        if video.default_subtitles is None:
+            video.default_subtitles = subs
+            video.save()
         return {'status':"OK", 'comment':"NEW"}
 
 
