@@ -306,11 +306,14 @@ ytts.initEventListeners = function() {
 
     ytts.getActiveLines = function(seconds) {
         var subs = document.getElementById("subtitles").querySelectorAll("[data-subtitle='true']");
-        var activeLines = [], tmpLine;
+        var activeLines = [], tmpLine, tmpTimeStart, tmpTimeStop;
         for(var i=0; i<subs.length; i++) {
             tmpLine = subs[i];
-            if(timeToSeconds(tmpLine.querySelector("[data-subtitlestart]").value) <= seconds
-               && timeToSeconds(tmpLine.querySelector("[data-subtitlestop]").value) >= seconds
+            tmpTimeStart = tmpLine.querySelector("[data-subtitlestart]").value;
+            tmpTimeStop = tmpLine.querySelector("[data-subtitlestop]").value;
+            if(tmpTimeStart!="" && tmpTimeStop!=""
+               && timeToSeconds(tmpTimeStart)<=seconds
+               && timeToSeconds(tmpTimeStop)>=seconds
                ) {
                 activeLines.push(tmpLine);
             }
