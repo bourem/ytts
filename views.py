@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse, Http404, JsonResponse
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 import json
 
@@ -41,6 +42,7 @@ def get_subtitles_versions(video_id):
     return Subtitles.objects.values_list('version_name', 
             flat=True).filter(video__video_id=video_id)
 
+@ensure_csrf_cookie
 def subtitles_editor(request, video_id):
     version_name = request.GET.get('version', None)
     subs = get_subtitles_from_video(video_id, version_name)
