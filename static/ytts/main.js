@@ -37,6 +37,12 @@ ytts.initEventListeners = function() {
 };
 
 (function() {
+    new Vue({
+        el: "#subtitles",
+        data: {
+            subtitles: initSubtitles
+        }
+    });
 
     ytts.currentVersion = initVersion;
 
@@ -206,6 +212,7 @@ ytts.initEventListeners = function() {
     }
 
     // Adds a first empty subtitle line.
+    /*
     if (initSubtitles.length > 0) {
         for (sub of initSubtitles) {
             ytts.addSubtitle(sub);
@@ -213,6 +220,7 @@ ytts.initEventListeners = function() {
     } else {
         ytts.addSubtitle(null);
     }
+    */
 
     // Drag events handlers for the subtitles.
     // Would have preferred to use x-moz-node to drag the DOM node,

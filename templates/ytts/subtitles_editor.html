@@ -9,7 +9,8 @@
             var initVersion = "{{ subtitles.version }}";
             var initVersions = {{ all_versions|safe }};
         </script>
-        <script type="text/javascript" src="{% static "ytts/main.js" %}" async defer></script>
+        <script src="{% static "ytts/vue.min.js" %}" async defer></script>
+        <script src="{% static "ytts/main.js" %}" async defer></script>
         {% endif %}
         <link rel="stylesheet" href="{% static "ytts/main.css" %}" />
     </head>
@@ -49,6 +50,18 @@
         </div>
 
         <div id="subtitles">
+            <div v-for="subtitle in subtitles">
+            <div class="subtitle" data-subtitle='true'>
+                <div data-subtitleinsert="before" draggable="true" ondragover="ytts.dragover_handler(event)" ondrop="ytts.drop_handler(event)" ondragstart="ytts.dragstartSubtitle(event)"></div>
+                <textarea data-subtitletext>{% verbatim %}{{ subtitle.subtitle }}{% endverbatim %}</textarea>
+                <input type="text" data-subtitlestart v-bind:value="subtitle.start" />
+                <input type="text" data-subtitlestop v-bind:value="subtitle.stop" />
+                <button onclick="ytts.setStart(event)">Start here</button>
+                <button onclick="ytts.setStop(event)">Stop here</button>
+                <button onclick="ytts.setCursorAtSubtitle(event)">Position in Video</button>
+                <div data-subtitleinsert="after" draggable="true" ondragover="ytts.dragover_handler(event)" ondrop="ytts.drop_handler(event)" ondragstart="ytts.dragstartSubtitle(event)"></div>
+            </div>
+            </div>
         </div>
 
         <template id="subtitleTemplate">

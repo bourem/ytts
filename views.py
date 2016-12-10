@@ -73,7 +73,8 @@ def subtitles_editor(request, video_id):
 
 def subtitles_viewer(request, video_id):
     context = {'video_id': video_id, 
-            'subtitles': get_subtitles_from_video(video_id)}
+            'subtitles': json.loads(get_subtitles_from_video(video_id)\
+                    .subtitles_json).get("subtitles")}
     return render(request, 'ytts/subtitles_viewer.html', context)
 
 def subtitles_saver(request, video_id):

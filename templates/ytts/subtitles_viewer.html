@@ -3,6 +3,7 @@
 <html>
     <head>
         <!--script type="text/javascript" src="{% static "ytts/main.js" %}"></script-->
+        <script type="text/javascript" src="{% static "ytts/vue.min.js" %}"></script>
         <link rel="stylesheet" href="{% static "ytts/main.css" %}"></link>
     </head>
     <body>
@@ -18,6 +19,8 @@
                 <p>{{ subtitle.subtitle }}</p>
             {% endfor %}
         </div>
+
+        <script>//console.log("{{ subtitles }}");</script>
 
     </body>
 </html>
