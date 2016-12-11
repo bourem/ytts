@@ -50,14 +50,14 @@
         </div>
 
         <div id="subtitles">
-            <div v-for="subtitle in subtitles">
+            <div v-for="(subtitle, index) in subtitles">
             <div class="subtitle" data-subtitle='true'>
                 <div data-subtitleinsert="before" draggable="true" ondragover="ytts.dragover_handler(event)" ondrop="ytts.drop_handler(event)" ondragstart="ytts.dragstartSubtitle(event)"></div>
-                <textarea data-subtitletext>{% verbatim %}{{ subtitle.subtitle }}{% endverbatim %}</textarea>
-                <input type="text" data-subtitlestart v-bind:value="subtitle.start" />
-                <input type="text" data-subtitlestop v-bind:value="subtitle.stop" />
-                <button onclick="ytts.setStart(event)">Start here</button>
-                <button onclick="ytts.setStop(event)">Stop here</button>
+                <textarea data-subtitletext v-model="subtitle.subtitle"></textarea>
+                <input type="text" data-subtitlestart v-model="subtitle.start" />
+                <input type="text" data-subtitlestop v-model="subtitle.stop" />
+                <button v-on:click="setStart(index)">Start here</button>
+                <button v-on:click="setStop(index)">Stop here</button>
                 <button onclick="ytts.setCursorAtSubtitle(event)">Position in Video</button>
                 <div data-subtitleinsert="after" draggable="true" ondragover="ytts.dragover_handler(event)" ondrop="ytts.drop_handler(event)" ondragstart="ytts.dragstartSubtitle(event)"></div>
             </div>

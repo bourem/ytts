@@ -37,10 +37,31 @@ ytts.initEventListeners = function() {
 };
 
 (function() {
-    new Vue({
+    window.vSubtitles = new Vue({
         el: "#subtitles",
         data: {
             subtitles: initSubtitles
+        },
+        methods: {
+            addSubtitle: function(subtitleParams) {
+                var newSubtitle = {};
+                if (subtitleParams) {
+                    newSubtitle = {
+                        subtitle: subtitleParams['subtitle'],
+                        start: subtitleParams['start'],
+                        stop: subtitleParams['stop']
+                    };
+                }
+                this.subtitles.push(newSubtitle);
+            },
+            setStart: function(index) {
+                var startTimestamp = secondsToTime(player.getCurrentTime());
+                this.subtitles[index].start = startTimestamp;
+            },
+            setStop: function(index) {
+                var startTimestamp = secondsToTime(player.getCurrentTime());
+                this.subtitles[index].stop = startTimestamp;
+            }
         }
     });
 
@@ -105,32 +126,7 @@ ytts.initEventListeners = function() {
 
     // Subtitle functions below
     ytts.addSubtitle = function(subtitleParams) {
-        if ('content' in document.createElement('template')) {
-            var subtitles = document.querySelector("#subtitles"),
-                tmp = document.getElementById("subtitleTemplate");
-            var newSubtitle = document.importNode(tmp.content, true);
-            if (subtitleParams) {
-                newSubtitle.querySelector("[data-subtitletext]")
-                    .value = subtitleParams["subtitle"];
-                newSubtitle.querySelector("[data-subtitlestart]")
-                    .value = subtitleParams["start"];
-                newSubtitle.querySelector("[data-subtitlestop]")
-                    .value = subtitleParams["stop"];
-            }
-            subtitles.appendChild(newSubtitle);
-        }
-    };
-
-    ytts.setStart = function(event) {
-        var startTimestamp = secondsToTime(player.getCurrentTime());
-        var subtitle = event.target.parentNode;
-        subtitle.querySelector("[data-subtitlestart]").value = startTimestamp;
-    };
-
-    ytts.setStop = function(event) {
-        var stopTimestamp = secondsToTime(player.getCurrentTime());
-        var subtitle = event.target.parentNode;
-        subtitle.querySelector("[data-subtitlestop]").value = stopTimestamp;
+        vSubtitles.addSubtitle(subtitleParams);
     };
 
     // Helper function to display seconds (output from YT API)
