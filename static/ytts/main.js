@@ -8,14 +8,6 @@ ytts.initEventListeners = function() {
         .addEventListener("click", ytts.saveSubtitles); 
     document.getElementById("subtitleControlDownload")
         .addEventListener("click", function(e){ytts.downloadSubtitles(e)});
-    document.getElementById("versionControlLoad")
-        .addEventListener("click", function() {
-            var versionToLoad = document.getElementById("versionToLoad")
-                .value;
-            if(versionToLoad != ytts.currentVersion) {
-                ytts.loadSubtitles(versionToLoad);
-            }
-        });
     document.getElementById("versionControlCreate")
         .addEventListener("click", function() {
             var versionToCreate = document.getElementById("versionToCreate")
@@ -37,10 +29,48 @@ ytts.initEventListeners = function() {
 };
 
 (function() {
+    Vue.prototype.$http = axios;
+    
+    var csrftoken = getCookie('csrftoken');
+    
+    var videoId = document.getElementById("ytplayer")
+        .getAttribute("data-initvideoid");
+
+    window.vSubtitlesLoader = new Vue({
+        el: "#subtitlesLoader",
+        data: {
+            // Available versions for this video
+            availableVersions: initVersions,
+            // Selected in select-box
+            selectedVersion: initVersion,
+            // Actually loaded and displayed. Current version
+            loadedVersion: initVersion
+        },
+        methods: {
+            loadVersion: function() {
+                var versionName = this.selectedVersion;
+                this.$http.get("/ytts/" + videoId + "/load/", {
+                    params: {
+                        version_name: versionName,
+                    },
+                    responseType: "json"
+                }).then(function (response) {
+                    console.log(response);
+                    var newSubs = response.data;
+                    document.getElementById("current_version_name").innerHTML = versionName;
+                    ytts.currentVersion = versionName;
+                    this.loadedVersion = versionName
+                    ytts.updateSubtitlesView(newSubs);
+                });
+            }
+        }
+    });
+
     window.vSubtitles = new Vue({
         el: "#subtitles",
         data: {
-            subtitles: initSubtitles
+            subtitles: initSubtitles,
+            currentVersion: initVersion
         },
         methods: {
             addSubtitle: function(subtitleParams) {
@@ -75,9 +105,6 @@ ytts.initEventListeners = function() {
 
     // Youtube video player control object
     var player, videoLength;
-
-    var videoId = document.getElementById("ytplayer")
-        .getAttribute("data-initvideoid");
 
     // Automatically called when Youtube iFrame API loaded.
     // Attaching to window for the API to see it.
@@ -178,7 +205,6 @@ ytts.initEventListeners = function() {
         return subsFinalArray;
     }
 
-    var csrftoken = getCookie('csrftoken');
     ytts.saveSubtitles = function() {
         console.log(ytts.buildSubRip());
         var xhr = new XMLHttpRequest();
@@ -323,28 +349,6 @@ ytts.initEventListeners = function() {
             }
         }
         return activeLines;
-    };
-
-    ytts.loadSubtitles = function(version_name) {
-        var xhr = new XMLHttpRequest();
-        var url = "/ytts/" + videoId + "/load/";
-        xhr.open("GET", url + "?version_name=" + version_name, true);
-        xhr.responseType = "json";
-        
-        xhr.onreadystatechange = function() {
-            if(xhr.readyState == 4) {
-                if(xhr.status == 200) {
-                    var new_subs = xhr.response;
-                    console.log(new_subs);
-                    if(new_subs) {
-                        document.getElementById("current_version_name").innerHTML = version_name;
-                        ytts.currentVersion = version_name;
-                        ytts.updateSubtitlesView(new_subs);
-                    }
-                }
-            }
-        };
-        xhr.send(null);
     };
 
     ytts.createSubtitles = function(versionToCreate, clonedFrom) {
