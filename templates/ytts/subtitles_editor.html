@@ -9,24 +9,23 @@
             var initVersion = "{{ subtitles.version }}";
             var initVersions = {{ all_versions|safe }};
         </script>
-        <script src="{% static "ytts/vue.min.js" %}" async defer></script>
-        <script src="{% static "ytts/axios.min.js" %}" async defer></script>
-        <script src="{% static "ytts/main.js" %}" async defer></script>
+        <script src="{% static "ytts/axios.min.js" %}" ></script>
+        <script src="{% static "ytts/vue.min.js" %}" ></script>
+        <script src="{% static "ytts/main.js" %}" defer></script>
         {% endif %}
         <link rel="stylesheet" href="{% static "ytts/main.css" %}" />
     </head>
     <body>
-        <h1>Timestamper</h1>
+        <div id="yttsApp">
+       
+            <h1>Timestamper</h1>
         
         {% if subtitles %}<div id="current_version">Loaded version: <span id="current_version_name">{{ subtitles.version }}</span></div>{% endif %}
 
         <div id="subtitlesVersions">
-            <div id="subtitlesLoader">Available versions
-            <select name="version" id="versionToLoad" v-model="selectedVersion">{% for v in all_versions %}
-                <option value="{{ v }}">{{ v }}</option>{% endfor %}
-            </select>
-            <button id="versionControlLoad" v-on:click="loadVersion">Load Version</button><span class="warning">If you decide to load another version the current work will be lost</span>
-            </div>
+            
+            <ytts-subtitlesloader></ytts-subtitlesloader>
+
             <div>
                 Create new version: 
                 <input id="versionToCreate" type="text" maxlength="20" placeholder="name (max 20 chars)">
@@ -44,40 +43,52 @@
         <div id="activeLine">
         </div>
 
-        <div id="subtitlesControls">
-            <button id="subtitleControlAdd">Add subtitle</button>
-            <button id="subtitleControlSave">Save subtitle</button>
-            <a href="" id="subtitleControlDownload" download="subtitles.srt">DL (SubRip)</a>
+        <ytts-subtitles></ytts-subtitles>
+        <ytts-test></ytts-test>
+
+        
+        <div id="savingFeedback" style="display:none">Saving...</div>        
         </div>
 
-        <div id="subtitles">
-            <div v-for="(subtitle, index) in subtitles">
+        <template id="testTemplate">
+        <div :test="currentVersion">{% verbatim %}{{currentVersion}}{% endverbatim %}</div>
+        </template>
+
+        <template id="subtitlesTemplate">
+        <div>
+            <div id="subtitlesControls">
+                <button id="subtitleControlAdd" v-on:click="addSubtitle">Add subtitle</button>
+                <button id="subtitleControlSave">Save subtitle</button>
+                <a href="" id="subtitleControlDownload" download="subtitles.srt">DL (SubRip)</a>
+            </div>
+            <div>
+                <ytts-subtitle v-for="(subtitle, index) in subtitles" :subtitle="subtitle" :index="index"></ytts-subtitle>
+            </div>
+            </div>
+        </template>
+
+        <template id="subtitleTemplate">
             <div class="subtitle" data-subtitle='true'>
                 <div data-subtitleinsert="before" draggable="true" ondragover="ytts.dragover_handler(event)" ondrop="ytts.drop_handler(event)" ondragstart="ytts.dragstartSubtitle(event)"></div>
                 <textarea data-subtitletext v-model="subtitle.subtitle"></textarea>
-                <input type="text" data-subtitlestart v-model="subtitle.start" />
+                <input type="text" data-start v-model="subtitle.start" />
                 <input type="text" data-subtitlestop v-model="subtitle.stop" />
-                <button v-on:click="setStart(index)">Start here</button>
-                <button v-on:click="setStop(index)">Stop here</button>
+                <button v-on:click="setStart">Start here</button>
+                <button v-on:click="setStop">Stop here</button>
                 <button onclick="ytts.setCursorAtSubtitle(event)">Position in Video</button>
                 <div data-subtitleinsert="after" draggable="true" ondragover="ytts.dragover_handler(event)" ondrop="ytts.drop_handler(event)" ondragstart="ytts.dragstartSubtitle(event)"></div>
             </div>
-            </div>
-        </div>
-
-        <template id="subtitleTemplate">
-        <div class="subtitle" data-subtitle='true'>
-            <div data-subtitleinsert="before" draggable="true" ondragover="ytts.dragover_handler(event)" ondrop="ytts.drop_handler(event)" ondragstart="ytts.dragstartSubtitle(event)"></div>
-            <textarea data-subtitletext></textarea>
-            <input type="text" data-subtitlestart />
-            <input type="text" data-subtitlestop />
-            <button onclick="ytts.setStart(event)">Start here</button>
-            <button onclick="ytts.setStop(event)">Stop here</button>
-            <button onclick="ytts.setCursorAtSubtitle(event)">Position in Video</button>
-            <div data-subtitleinsert="after" draggable="true" ondragover="ytts.dragover_handler(event)" ondrop="ytts.drop_handler(event)" ondragstart="ytts.dragstartSubtitle(event)"></div>
-        </div>
         </template>
         
-        <div id="savingFeedback" style="display:none">Saving...</div>        
+        <template id="loaderTemplate">
+        <div>
+            Available versions
+            <select name="version" id="versionToLoad" v-model="selectedVersion">
+                <option v-for="v in availableVersions" :value="v">{% verbatim %}{{ v }}{% endverbatim %}</option>
+            </select>
+            <button id="versionControlLoad" v-on:click="loadVersion">Load Version</button><span class="warning">If you decide to load another version the current work will be lost</span>
+        </div>
+        </template>
+
     </body>
 </html>

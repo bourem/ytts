@@ -1,9 +1,8 @@
+!function() {
 window.ytts = {};
 
 ytts.initEventListeners = function() {
     // Subtitle Controls
-    document.getElementById("subtitleControlAdd")
-        .addEventListener("click", function(){ytts.addSubtitle()});
     document.getElementById("subtitleControlSave")
         .addEventListener("click", ytts.saveSubtitles); 
     document.getElementById("subtitleControlDownload")
@@ -28,7 +27,6 @@ ytts.initEventListeners = function() {
 //        .addEVentListener("dragstart", function(e){ytts.dragstartSubtitle(e)});
 };
 
-(function() {
     Vue.prototype.$http = axios;
     
     var csrftoken = getCookie('csrftoken');
@@ -36,18 +34,27 @@ ytts.initEventListeners = function() {
     var videoId = document.getElementById("ytplayer")
         .getAttribute("data-initvideoid");
 
-    window.vSubtitlesLoader = new Vue({
-        el: "#subtitlesLoader",
-        data: {
-            // Available versions for this video
-            availableVersions: initVersions,
-            // Selected in select-box
-            selectedVersion: initVersion,
-            // Actually loaded and displayed. Current version
-            loadedVersion: initVersion
+    Vue.component('ytts-test', {
+        template: "#testTemplate",
+        data: function () {
+            return {currentVersion: initVersion}
+        }
+    });
+
+    Vue.component('ytts-subtitlesloader', {
+        template: "#loaderTemplate",
+        data: function(){
+            return {
+                // Available versions for this video
+                availableVersions: initVersions,
+                // Selected in select-box
+                selectedVersion: initVersion,
+                // Actually loaded and displayed. Current version
+                loadedVersion: initVersion
+            }
         },
         methods: {
-            loadVersion: function() {
+            loadVersion: function () {
                 var versionName = this.selectedVersion;
                 this.$http.get("/ytts/" + videoId + "/load/", {
                     params: {
@@ -65,12 +72,35 @@ ytts.initEventListeners = function() {
             }
         }
     });
+    
+    Vue.component('ytts-subtitle',{
+        template: '#subtitleTemplate',
+        props: ['subtitle','index'],
+        data: function () {
+            return {
+                subtitle: this.subtitle,
+                index: this.index
+            }
+        },
+        methods: {
+            setStart: function() {
+                var startTimestamp = secondsToTime(player.getCurrentTime());
+                this.subtitle.start = startTimestamp;
+            },
+            setStop: function() {
+                var startTimestamp = secondsToTime(player.getCurrentTime());
+                this.subtitle.stop = startTimestamp;
+            }
+        }
+    });
 
-    window.vSubtitles = new Vue({
-        el: "#subtitles",
-        data: {
-            subtitles: initSubtitles,
-            currentVersion: initVersion
+    Vue.component('ytts-subtitles', {
+        template: "#subtitlesTemplate",
+        data: function () {
+            return {
+                subtitles: initSubtitles,
+                currentVersion: initVersion
+            }
         },
         methods: {
             addSubtitle: function(subtitleParams) {
@@ -84,15 +114,12 @@ ytts.initEventListeners = function() {
                 }
                 this.subtitles.push(newSubtitle);
             },
-            setStart: function(index) {
-                var startTimestamp = secondsToTime(player.getCurrentTime());
-                this.subtitles[index].start = startTimestamp;
-            },
-            setStop: function(index) {
-                var startTimestamp = secondsToTime(player.getCurrentTime());
-                this.subtitles[index].stop = startTimestamp;
-            }
         }
+    });
+
+    window.vYttsApp = new Vue({
+        el: "#yttsApp",
+
     });
 
     ytts.currentVersion = initVersion;
@@ -396,4 +423,4 @@ ytts.initEventListeners = function() {
     }
 
     ytts.initEventListeners();
-}());
+}();
