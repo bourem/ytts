@@ -3,8 +3,6 @@ window.ytts = {};
 
 ytts.initEventListeners = function() {
     // Subtitle Controls
-    document.getElementById("subtitleControlSave")
-        .addEventListener("click", ytts.saveSubtitles); 
     document.getElementById("subtitleControlDownload")
         .addEventListener("click", function(e){ytts.downloadSubtitles(e)});
     document.getElementById("versionControlCreate")
@@ -29,50 +27,65 @@ ytts.initEventListeners = function() {
 
     Vue.prototype.$http = axios;
     
+    // To coordinate the various components (save, load, subtitles etc.)
+    // TODO: switch to State Management Pattern?
+    // https://vuejs.org/v2/guide/state-management.html
+    var bus = new Vue();
+
     var csrftoken = getCookie('csrftoken');
     
+    // TODO: set up video in Django context, move initVideo to template.
     var videoId = document.getElementById("ytplayer")
         .getAttribute("data-initvideoid");
-
-    Vue.component('ytts-test', {
-        template: "#testTemplate",
-        data: function () {
-            return {currentVersion: initVersion}
-        }
-    });
+    var initVideo = videoId;
+    
 
     Vue.component('ytts-subtitlesloader', {
         template: "#loaderTemplate",
-        data: function(){
+        data: function () {
             return {
                 // Available versions for this video
                 availableVersions: initVersions,
                 // Selected in select-box
                 selectedVersion: initVersion,
                 // Actually loaded and displayed. Current version
-                loadedVersion: initVersion
+                loadedVersion: initVersion,
+                currentVideo: initVideo
             }
+        },
+        created: function () {
+            bus.$on('new-subtitles', this.updateSubtitles);
         },
         methods: {
             loadVersion: function () {
                 var versionName = this.selectedVersion;
+                var videoId = this.currentVideo;
                 this.$http.get("/ytts/" + videoId + "/load/", {
                     params: {
                         version_name: versionName,
                     },
                     responseType: "json"
                 }).then(function (response) {
-                    console.log(response);
-                    var newSubs = response.data;
-                    document.getElementById("current_version_name").innerHTML = versionName;
-                    ytts.currentVersion = versionName;
-                    this.loadedVersion = versionName
-                    ytts.updateSubtitlesView(newSubs);
+                        bus.$emit('new-subtitles', response.data, versionName, videoId)
                 });
+            },
+            updateSubtitles: function (subtitles, version, video) {
+                this.subtitles = subtitles;
+                if(version) this.loadedVersion = version;
+                if(video) this.currentVideo = video;
             }
         }
     });
-    
+
+    Vue.component('ytts-subtitlessaver', {
+        template: "#saveButtonTemplate",
+        methods: {
+            saveSubtitles: function () {
+                this.$emit('save');
+            }
+        }
+    });
+
     Vue.component('ytts-subtitle',{
         template: '#subtitleTemplate',
         props: ['subtitle','index'],
@@ -99,11 +112,15 @@ ytts.initEventListeners = function() {
         data: function () {
             return {
                 subtitles: initSubtitles,
+                currentVideo: initVideo,
                 currentVersion: initVersion
             }
         },
+        created: function () {
+            bus.$on('new-subtitles', this.updateSubtitles);
+        },
         methods: {
-            addSubtitle: function(subtitleParams) {
+            addSubtitle: function (subtitleParams) {
                 var newSubtitle = {};
                 if (subtitleParams) {
                     newSubtitle = {
@@ -114,6 +131,45 @@ ytts.initEventListeners = function() {
                 }
                 this.subtitles.push(newSubtitle);
             },
+            saveSubtitles: function () {
+                document.getElementById("savingFeedback").style.display = "block";
+                var url = "/ytts/" + this.currentVideo + "/save/";
+                this.$http.post(url,
+                    'subtitles_json=' + JSON.stringify(this.subtitles) + '&version_name=' + this.currentVersion,
+                    {
+                        headers: {
+                            'Content-type': "application/x-www-form-urlencoded",
+                            'X-CSRFToken': csrftoken
+                        }
+                    })
+                    .then(function (response) {
+                        document.getElementById("savingFeedback").style.display = "none";
+                        console.log(response);
+                    });
+                //var subtitlesJson = [{"subtitle":"blahblah", "start":"00:00:00.0", "stop":"00:00:00.0"},{"subtitle":"blehbleh", "start":"00:00:00.0", "stop":"00:00:00.0"}];
+                //'subtitles_json=' + JSON.stringify(this.subtitles) + '&version_name=' + this.currentVersion
+            },
+            toSubRip: function () {
+                var subsFinalArray = [];
+                var subs = this.subtitles;
+                var tmpSubRow, tmpSubString;
+                for(var i=0; i<subs.length; i++) {
+                    tmpSubRow = subs[i];
+                    tmpSubString = i + "\n";
+                    tmpSubString += tmpSubRow['start'] + "-->";
+                    tmpSubString += tmpSubRow['stop'] + "\n";
+                    tmpSubString += tmpSubRow['subtitle'] + "\n";
+                    subsFinalArray.push(tmpSubString);
+                }
+                var subsFinal = subsFinalArray.join("\n");
+                return subsFinal;
+            },
+            updateSubtitles: function (subtitles, version, video) {
+                this.subtitles = subtitles;
+                if(version) this.currentVersion = version;
+                if(video) this.currentVideo = video;
+                console.log(version, video);
+            }
         }
     });
 
@@ -178,11 +234,6 @@ ytts.initEventListeners = function() {
         }
     }
 
-    // Subtitle functions below
-    ytts.addSubtitle = function(subtitleParams) {
-        vSubtitles.addSubtitle(subtitleParams);
-    };
-
     // Helper function to display seconds (output from YT API)
     // to h:m:s (format for subtitles).
     function secondsToTime(s) {
@@ -232,44 +283,10 @@ ytts.initEventListeners = function() {
         return subsFinalArray;
     }
 
-    ytts.saveSubtitles = function() {
-        console.log(ytts.buildSubRip());
-        var xhr = new XMLHttpRequest();
-        var url = "/ytts/" + videoId + "/save/";
-        xhr.open("POST", url, true);
-        xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-        xhr.setRequestHeader("X-CSRFToken", csrftoken);
-        
-        xhr.onreadystatechange = function() {
-            if(xhr.readyState == 4) {
-                document.getElementById("savingFeedback").style.display = "none";
-                if(xhr.status == 200) {
-                    console.log(xhr.response);
-                }
-            }
-        };
-        
-        //var subtitlesJson = [{"subtitle":"blahblah", "start":"00:00:00.0", "stop":"00:00:00.0"},{"subtitle":"blehbleh", "start":"00:00:00.0", "stop":"00:00:00.0"}];
-        var subtitlesJSON = ytts.buildSubsJSON();
-        document.getElementById("savingFeedback").style.display = "block";
-        xhr.send('subtitles_json='+JSON.stringify(subtitlesJSON)+'&version_name='+ytts.currentVersion);
-    }
-
     // TODO: change function signature or name.
     ytts.downloadSubtitles = function(event) {
         event.target.href = "data:text/plain;charset=utf-8," + encodeURIComponent(ytts.buildSubRip());
     }
-
-    // Adds a first empty subtitle line.
-    /*
-    if (initSubtitles.length > 0) {
-        for (sub of initSubtitles) {
-            ytts.addSubtitle(sub);
-        }
-    } else {
-        ytts.addSubtitle(null);
-    }
-    */
 
     // Drag events handlers for the subtitles.
     // Would have preferred to use x-moz-node to drag the DOM node,
@@ -398,14 +415,6 @@ ytts.initEventListeners = function() {
         }
     };
 
-    ytts.clearSubtitlesView = function() {
-        document.getElementById("subtitles").innerHTML = "";
-    };
-
-    ytts.loadVideo = function(video_id) {
-        ytts.loadSubtitle();
-    }
-    
     function getCookie(name) {
         var cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -421,6 +430,16 @@ ytts.initEventListeners = function() {
         }
         return cookieValue;
     }
+
+    // Test component to quickly test Vue things
+    Vue.component('ytts-test', {
+        template: "<div :test='currentVersion'>{{ currentVersion }}</div>",
+        data: function () {
+            return {
+                currentVersion: initVersion
+            }
+        }
+    });
 
     ytts.initEventListeners();
 }();
