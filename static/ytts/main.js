@@ -3,8 +3,6 @@ window.ytts = {};
 
 ytts.initEventListeners = function() {
     // Subtitle Controls
-    document.getElementById("subtitleControlDownload")
-        .addEventListener("click", function(e){ytts.downloadSubtitles(e)});
     document.getElementById("versionControlCreate")
         .addEventListener("click", function() {
             var versionToCreate = document.getElementById("versionToCreate")
@@ -27,64 +25,109 @@ ytts.initEventListeners = function() {
 
     Vue.prototype.$http = axios;
     
-    // To coordinate the various components (save, load, subtitles etc.)
-    // TODO: switch to State Management Pattern?
-    // https://vuejs.org/v2/guide/state-management.html
-    var bus = new Vue();
-
     var csrftoken = getCookie('csrftoken');
     
     // TODO: set up video in Django context, move initVideo to template.
     var videoId = document.getElementById("ytplayer")
         .getAttribute("data-initvideoid");
     var initVideo = videoId;
-    
 
-    Vue.component('ytts-subtitlesloader', {
-        template: "#loaderTemplate",
-        data: function () {
-            return {
-                // Available versions for this video
-                availableVersions: initVersions,
-                // Selected in select-box
-                selectedVersion: initVersion,
-                // Actually loaded and displayed. Current version
-                loadedVersion: initVersion,
-                currentVideo: initVideo
-            }
+    const store = new Vuex.Store({
+        state: {
+            subtitles: initSubtitles,
+            video: initVideo,
+            version: initVersion,
+            availableVersions: initVersions,
         },
-        created: function () {
-            bus.$on('new-subtitles', this.updateSubtitles);
+        mutations: {
+            setSubtitles (state, payload) {
+                state.subtitles = payload.newSubtitles;
+                if (payload.newVersion) state.version = payload.newVersion;
+                if (payload.newVideo) state.video = payload.newVideo;
+            },
+            addSubtitle (state, payload) {
+                var newSubtitle = {};
+                if (payload) {
+                    newSubtitle = {
+                        subtitle: payload.subtitle,
+                        start: payload.start,
+                        stop: payload.stop,
+                    };
+                }
+                state.subtitles.push(newSubtitle);
+            },
         },
-        methods: {
-            loadVersion: function () {
-                var versionName = this.selectedVersion;
-                var videoId = this.currentVideo;
-                this.$http.get("/ytts/" + videoId + "/load/", {
+        actions: {
+            loadSubtitles ({ state, commit }, versionName) {
+                axios.get("/ytts/" + state.video + "/load/", {
                     params: {
                         version_name: versionName,
                     },
                     responseType: "json"
                 }).then(function (response) {
-                        bus.$emit('new-subtitles', response.data, versionName, videoId)
+                    var payload = {
+                        newSubtitles: response.data,
+                        newVersion: versionName,
+                    };
+                    commit('setSubtitles', payload);
                 });
             },
-            updateSubtitles: function (subtitles, version, video) {
-                this.subtitles = subtitles;
-                if(version) this.loadedVersion = version;
-                if(video) this.currentVideo = video;
+            saveSubtitles: function () {
+                document.getElementById("savingFeedback").style.display = "block";
+                var url = "/ytts/" + this.currentVideo + "/save/";
+                this.$http.post(url,
+                    'subtitles_json=' + JSON.stringify(this.subtitles) + '&version_name=' + this.currentVersion,
+                    {
+                        headers: {
+                            'Content-type': "application/x-www-form-urlencoded",
+                            'X-CSRFToken': csrftoken
+                        }
+                    })
+                    .then(function (response) {
+                        document.getElementById("savingFeedback").style.display = "none";
+                        console.log(response);
+                    });
+                //var subtitlesJson = [{"subtitle":"blahblah", "start":"00:00:00.0", "stop":"00:00:00.0"},{"subtitle":"blehbleh", "start":"00:00:00.0", "stop":"00:00:00.0"}];
+                //'subtitles_json=' + JSON.stringify(this.subtitles) + '&version_name=' + this.currentVersion
             }
         }
     });
 
-    Vue.component('ytts-subtitlessaver', {
-        template: "#saveButtonTemplate",
-        methods: {
-            saveSubtitles: function () {
-                this.$emit('save');
+    // uncoupled component
+    Vue.component('ytts-twostepsselection', {
+        props: {
+            availableOptions: {
+                type: Array,
+                default: function () {
+                    return []
+                }
+            },
+            selectedOption: String
+        },
+        data: function () {
+            return {
+                preSelectedOption: this.selectedOption
             }
-        }
-    });
+        },
+        methods: {
+            selectOption: function () {
+                this.$emit("select-option", this.preSelectedOption);
+            }
+        },
+        template: "<div>\
+            <p><slot name='selected-label-text'>Selected option</slot>:\
+                {{ selectedOption }}\
+            </p>\
+            <slot name='available-label-text'>Available options</slot>\
+            <select v-model='preSelectedOption'>\
+                <option v-for='option in availableOptions' :value='option'>\
+                {{ option }}</option>\
+            </select>\
+            <button v-on:click='selectOption'>\
+                <slot name='select-button-text'>Select</slot>\
+            </button>\
+        </div>"
+    });    
 
     Vue.component('ytts-subtitle',{
         template: '#subtitleTemplate',
@@ -109,27 +152,12 @@ ytts.initEventListeners = function() {
 
     Vue.component('ytts-subtitles', {
         template: "#subtitlesTemplate",
-        data: function () {
-            return {
-                subtitles: initSubtitles,
-                currentVideo: initVideo,
-                currentVersion: initVersion
-            }
-        },
-        created: function () {
-            bus.$on('new-subtitles', this.updateSubtitles);
-        },
+        computed: Vuex.mapState({
+            subtitles: 'subtitles'
+        }),
         methods: {
-            addSubtitle: function (subtitleParams) {
-                var newSubtitle = {};
-                if (subtitleParams) {
-                    newSubtitle = {
-                        subtitle: subtitleParams['subtitle'],
-                        start: subtitleParams['start'],
-                        stop: subtitleParams['stop']
-                    };
-                }
-                this.subtitles.push(newSubtitle);
+            addSubtitle: function () {
+                this.$store.commit('addSubtitle');
             },
             saveSubtitles: function () {
                 document.getElementById("savingFeedback").style.display = "block";
@@ -164,18 +192,25 @@ ytts.initEventListeners = function() {
                 var subsFinal = subsFinalArray.join("\n");
                 return subsFinal;
             },
-            updateSubtitles: function (subtitles, version, video) {
-                this.subtitles = subtitles;
-                if(version) this.currentVersion = version;
-                if(video) this.currentVideo = video;
-                console.log(version, video);
-            }
+            downloadSubtitles: function(event) {
+                event.target.href = "data:text/plain;charset=utf-8," + encodeURIComponent(this.toSubRip());
+            },
         }
     });
 
     window.vYttsApp = new Vue({
         el: "#yttsApp",
-
+        store,
+        computed: Vuex.mapState({
+            loadedVersion: 'version',
+            loadedVideo: 'video',
+            availableVersions: 'availableVersions',
+        }),
+        methods: {
+            loadVersion: function (versionName) {
+                this.$store.dispatch('loadSubtitles', versionName);
+            }
+        }
     });
 
     ytts.currentVersion = initVersion;
@@ -248,44 +283,6 @@ ytts.initEventListeners = function() {
     function timeToSeconds(t) {
         var [h, m, s] = t.split(":");
         return parseInt(h)*3600 + parseInt(m)*60 + parseFloat(s.replace(",", "."));
-    }
-
-    // Returns the subtitles in SubRip format.
-    ytts.buildSubRip = function() {
-        var subsFinalArray = [];
-        var subs = document.getElementById("subtitles").querySelectorAll("[data-subtitle='true']");
-        var tmpSubRow, tmpSubString;
-        for(var i=0; i<subs.length; i++) {
-            tmpSubRow = subs[i];
-            tmpSubString = i + "\n";
-            tmpSubString += tmpSubRow.querySelector("[data-subtitlestart]").value + "-->";
-            tmpSubString += tmpSubRow.querySelector("[data-subtitlestop]").value + "\n";
-            tmpSubString += tmpSubRow.querySelector("[data-subtitletext]").value + "\n";
-            subsFinalArray.push(tmpSubString);
-        }
-        var subsFinal = subsFinalArray.join("\n");
-        return subsFinal;
-    };
-
-    // Returns a subtitles object
-    ytts.buildSubsJSON = function() {
-        var subsFinalArray = [];
-        var subs = document.getElementById("subtitles").querySelectorAll("[data-subtitle='true']");
-        var tmpSubRow, tmpSubJSON;
-        for(var i=0; i<subs.length; i++) {
-            tmpSubRow = subs[i];
-            tmpSubJSON = {}
-            tmpSubJSON['start'] = tmpSubRow.querySelector("[data-subtitlestart]").value;
-            tmpSubJSON['stop'] = tmpSubRow.querySelector("[data-subtitlestop]").value;
-            tmpSubJSON['subtitle'] = tmpSubRow.querySelector("[data-subtitletext]").value;
-            subsFinalArray.push(tmpSubJSON);
-        }
-        return subsFinalArray;
-    }
-
-    // TODO: change function signature or name.
-    ytts.downloadSubtitles = function(event) {
-        event.target.href = "data:text/plain;charset=utf-8," + encodeURIComponent(ytts.buildSubRip());
     }
 
     // Drag events handlers for the subtitles.
@@ -430,16 +427,6 @@ ytts.initEventListeners = function() {
         }
         return cookieValue;
     }
-
-    // Test component to quickly test Vue things
-    Vue.component('ytts-test', {
-        template: "<div :test='currentVersion'>{{ currentVersion }}</div>",
-        data: function () {
-            return {
-                currentVersion: initVersion
-            }
-        }
-    });
 
     ytts.initEventListeners();
 }();
