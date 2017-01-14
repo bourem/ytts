@@ -8,6 +8,7 @@
             var initIsDefault = {{ subtitles.is_default_version|yesno:"true,false" }};
             var initVersion = "{{ subtitles.version }}";
             var initVersions = {{ all_versions|safe }};
+            var initVideo = "{{ video_id }}";
         </script>
         <script src="{% static "ytts/axios.min.js" %}" ></script>
         <script src="{% static "ytts/vue.min.js" %}" ></script>
@@ -33,12 +34,7 @@
                 </ytts-twostepsselection>
                 <span class="warning">If you decide to load another version the current work will be lost</span>
 
-                <div>
-                    Create new version: 
-                    <input id="versionToCreate" type="text" maxlength="20" placeholder="name (max 20 chars)">
-                    Clone current:<input id="versionIsClone" type="checkbox" value="clone">
-                    <button id="versionControlCreate">Create New Version</button>
-                </div>
+                <ytts-versioncreator></ytts-versioncreator>
             </div>
 
             <div id="ytplayer" data-initvideoid="{{ video_id }}"></div>
@@ -63,7 +59,7 @@
                 <div>
                     <ytts-subtitle v-for="(subtitle, index) in subtitles" :subtitle="subtitle" :index="index"></ytts-subtitle>
                 </div>
-                <div id="savingFeedback" style="display:none">Saving...</div>        
+                <div id="savingFeedback" v-if="isSaving">Saving...</div>        
             </div>
         </template>
 
@@ -81,14 +77,23 @@
         </template>
         
         <template id="loaderTemplate">
-        <div>
-            Available versions
-            <select name="version" id="versionToLoad" v-model="selectedVersion">
-                <option v-for="v in availableVersions" :value="v">{% verbatim %}{{ v }}{% endverbatim %}</option>
-            </select>
-            <button id="versionControlLoad" v-on:click="loadVersion">Load Version</button>
-            <span class="warning">If you decide to load another version the current work will be lost</span>
-        </div>
+            <div>
+                Available versions
+                <select name="version" id="versionToLoad" v-model="selectedVersion">
+                    <option v-for="v in availableVersions" :value="v">{% verbatim %}{{ v }}{% endverbatim %}</option>
+                </select>
+                <button id="versionControlLoad" v-on:click="loadVersion">Load Version</button>
+                <span class="warning">If you decide to load another version the current work will be lost</span>
+            </div>
+        </template>
+
+        <template id=versionCreatorTemplate>
+            <div>
+                Create new version: 
+                <input id="versionToCreate" type="text" maxlength="20" placeholder="name (max 20 chars)" v-model="newVersion">
+                Clone current:<input id="versionIsClone" type="checkbox" value="clone" v-model="isClone">
+                <button id="versionControlCreate" v-on:click="createVersion">Create New Version</button>
+            </div>
         </template>
 
     </body>
