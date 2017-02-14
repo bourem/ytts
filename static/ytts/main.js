@@ -5,10 +5,10 @@ window.ytts = {};
     
     const store = new Vuex.Store({
         state: {
-            subtitles: initSubtitles,
-            video: initVideo,
-            version: initVersion,
-            availableVersions: initVersions,
+            subtitles: view_init.subtitles,
+            video: view_init.video,
+            version: view_init.version,
+            availableVersions: view_init.versions,
             csrftoken: getCookie('csrftoken'),
             isSaving: false,
             lastSaveTime: null
@@ -238,7 +238,7 @@ window.ytts = {};
         player = new YT.Player('ytplayer', {
             //height: '390',
             //width: '640',
-            videoId: initVideo,
+            videoId: view_init.video,
             events: {
                 'onReady': onPlayerReady,
                 'onStateChange': onPlayerStateChange
@@ -415,5 +415,4 @@ window.ytts = {};
         return cookieValue;
     }
 
-    ytts.initEventListeners();
 }();

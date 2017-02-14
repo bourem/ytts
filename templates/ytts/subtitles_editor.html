@@ -4,11 +4,13 @@
         <title>YTTS</title>
         {% if subtitles %}
         <script>
-            var initSubtitles = {{ subtitles.subtitles|safe }};
-            var initIsDefault = {{ subtitles.is_default_version|yesno:"true,false" }};
-            var initVersion = "{{ subtitles.version }}";
-            var initVersions = {{ all_versions|safe }};
-            var initVideo = "{{ video_id }}";
+            var view_init = {
+                subtitles: {{ subtitles.subtitles|safe }},
+                isDefault: {{ subtitles.is_default_version|yesno:"true,false" }},
+                version: "{{ subtitles.version }}",
+                versions: {{ all_versions|safe }},
+                video: "{{ video_id }}"
+            };
         </script>
         <script src="{% static "ytts/axios.min.js" %}" ></script>
         <script src="{% static "ytts/vue.min.js" %}" ></script>
@@ -56,7 +58,7 @@
                     <button v-on:click="saveSubtitles">Save subtitles</button>
                     <a href="" id="subtitleControlDownload" download="subtitles.srt" v-on:click="downloadSubtitles">DL (SubRip)</a>
                 </div>
-                <div>
+                <div id="subtitles">
                     <ytts-subtitle v-for="(subtitle, index) in subtitles" :subtitle="subtitle" :index="index"></ytts-subtitle>
                 </div>
                 <div id="savingFeedback" v-if="isSaving">Saving...</div>        
@@ -67,7 +69,7 @@
             <div class="subtitle" data-subtitle='true'>
                 <div data-subtitleinsert="before" draggable="true" ondragover="ytts.dragover_handler(event)" ondrop="ytts.drop_handler(event)" ondragstart="ytts.dragstartSubtitle(event)"></div>
                 <textarea data-subtitletext v-model="subtitle.subtitle"></textarea>
-                <input type="text" data-start v-model="subtitle.start" />
+                <input type="text" data-subtitlestart v-model="subtitle.start" />
                 <input type="text" data-subtitlestop v-model="subtitle.stop" />
                 <button v-on:click="setStart">Start here</button>
                 <button v-on:click="setStop">Stop here</button>
