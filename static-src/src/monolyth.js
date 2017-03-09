@@ -1,3 +1,5 @@
+import 'TwoStepsSelection' from './components/TwoStepsSelection';
+
 !function() {
 window.ytts = {};
 
