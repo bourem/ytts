@@ -97,11 +97,9 @@ window.ytts = {};
 
     Vue.component('ytts-subtitle',{
         template: '#subtitleTemplate',
-        props: ['subtitle','index'],
+        props: ['subtitle'],
         data: function () {
             return {
-                subtitle: this.subtitle,
-                index: this.index
             }
         },
         methods: {
