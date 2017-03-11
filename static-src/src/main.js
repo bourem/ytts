@@ -2,6 +2,7 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 Vue.use(Vuex);
 import TwoStepsSelection from './components/TwoStepsSelection.vue';
+import Subtitle from './components/Subtitle.vue';
 
 window.ytts = {};
 
@@ -95,27 +96,11 @@ window.ytts = {};
         }
     });
 
-    Vue.component('ytts-subtitle',{
-        template: '#subtitleTemplate',
-        props: ['subtitle'],
-        data: function () {
-            return {
-            }
-        },
-        methods: {
-            setStart: function() {
-                var startTimestamp = secondsToTime(player.getCurrentTime());
-                this.subtitle.start = startTimestamp;
-            },
-            setStop: function() {
-                var startTimestamp = secondsToTime(player.getCurrentTime());
-                this.subtitle.stop = startTimestamp;
-            }
-        }
-    });
-
     Vue.component('ytts-subtitles', {
         template: "#subtitlesTemplate",
+        components: {
+            "ytts-subtitle": Subtitle,
+        },
         computed: Vuex.mapState({
             subtitles: 'subtitles',
             isSaving: 'isSaving',
@@ -176,7 +161,7 @@ window.ytts = {};
 
     window.vYttsApp = new Vue({
         components: {
-            "ytts-twostepsselection": TwoStepsSelection
+            "ytts-twostepsselection": TwoStepsSelection,
         },
         el: "#yttsApp",
         store,
