@@ -1,8 +1,10 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 Vue.use(Vuex);
+
 import TwoStepsSelection from './components/TwoStepsSelection.vue';
 import SubtitlesList from './components/SubtitlesList.vue';
+import VersionCreator from './components/VersionCreator.vue';
 
 window.ytts = {};
 
@@ -96,36 +98,12 @@ window.ytts = {};
         }
     });
 
-    Vue.component('ytts-versioncreator', {
-        template: "#versionCreatorTemplate",
-        data: function () {
-            return {
-                newVersion: "",
-                isClone: true,
-            }
-        },
-        computed: Vuex.mapState({
-            subtitles: 'subtitles',
-            isSaving: 'isSaving',
-        }),
-        methods: {
-            createVersion: function () {
-                var isClone = this.isClone;
-                this.$store.dispatch(
-                        'createSubtitles', 
-                        {
-                            version: this.newVersion, 
-                            isClone: this.isClone
-                        }
-                );
-            }
-        }
-    });
 
     window.vYttsApp = new Vue({
         components: {
             "ytts-twostepsselection": TwoStepsSelection,
             "ytts-subtitles": SubtitlesList,
+            "ytts-versioncreator": VersionCreator,
         },
         el: "#yttsApp",
         store,
