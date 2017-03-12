@@ -13,8 +13,6 @@
             };
         </script>
         <script src="{% static "ytts/axios.min.js" %}" ></script>
-        <!--script src="{% static "ytts/vue.min.js" %}" ></script-->
-        <!--script src="{% static "ytts/vuex@2.1.1.js" %}" ></script-->
         <script src="{% static "ytts/bundle.js" %}" defer></script>
         {% endif %}
         <link rel="stylesheet" href="{% static "ytts/main.css" %}" />
@@ -51,25 +49,5 @@
             
         </div>
         
-        <template id="loaderTemplate">
-            <div>
-                Available versions
-                <select name="version" id="versionToLoad" v-model="selectedVersion">
-                    <option v-for="v in availableVersions" :value="v">{% verbatim %}{{ v }}{% endverbatim %}</option>
-                </select>
-                <button id="versionControlLoad" v-on:click="loadVersion">Load Version</button>
-                <span class="warning">If you decide to load another version the current work will be lost</span>
-            </div>
-        </template>
-
-        <template id=versionCreatorTemplate>
-            <div>
-                Create new version: 
-                <input id="versionToCreate" type="text" maxlength="20" placeholder="name (max 20 chars)" v-model="newVersion">
-                Clone current:<input id="versionIsClone" type="checkbox" value="clone" v-model="isClone">
-                <button id="versionControlCreate" v-on:click="createVersion">Create New Version</button>
-            </div>
-        </template>
-
     </body>
 </html>
