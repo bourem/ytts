@@ -2,7 +2,7 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 Vue.use(Vuex);
 import TwoStepsSelection from './components/TwoStepsSelection.vue';
-import Subtitle from './components/Subtitle.vue';
+import SubtitlesList from './components/SubtitlesList.vue';
 
 window.ytts = {};
 
@@ -96,43 +96,6 @@ window.ytts = {};
         }
     });
 
-    Vue.component('ytts-subtitles', {
-        template: "#subtitlesTemplate",
-        components: {
-            "ytts-subtitle": Subtitle,
-        },
-        computed: Vuex.mapState({
-            subtitles: 'subtitles',
-            isSaving: 'isSaving',
-        }),
-        methods: {
-            addSubtitle: function () {
-                this.$store.commit('addSubtitle');
-            },
-            saveSubtitles: function () {
-                this.$store.dispatch('saveSubtitles');
-            },
-            toSubRip: function () {
-                var subsFinalArray = [];
-                var subs = this.subtitles;
-                var tmpSubRow, tmpSubString;
-                for(var i=0; i<subs.length; i++) {
-                    tmpSubRow = subs[i];
-                    tmpSubString = i + "\n";
-                    tmpSubString += tmpSubRow['start'] + "-->";
-                    tmpSubString += tmpSubRow['stop'] + "\n";
-                    tmpSubString += tmpSubRow['subtitle'] + "\n";
-                    subsFinalArray.push(tmpSubString);
-                }
-                var subsFinal = subsFinalArray.join("\n");
-                return subsFinal;
-            },
-            downloadSubtitles: function(event) {
-                event.target.href = "data:text/plain;charset=utf-8," + encodeURIComponent(this.toSubRip());
-            },
-        }
-    });
-
     Vue.component('ytts-versioncreator', {
         template: "#versionCreatorTemplate",
         data: function () {
@@ -162,6 +125,7 @@ window.ytts = {};
     window.vYttsApp = new Vue({
         components: {
             "ytts-twostepsselection": TwoStepsSelection,
+            "ytts-subtitles": SubtitlesList,
         },
         el: "#yttsApp",
         store,
