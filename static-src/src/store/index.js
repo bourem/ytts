@@ -6,6 +6,8 @@ import { getCookie } from '../utils/utils.js';
 
 export default new Vuex.Store({
     state: {
+        // view_init comes from the init values returned by Django.
+        // Cf. ytts/templates/ytts/subtitles_editor.html.
         subtitles: view_init.subtitles,
         video: view_init.video,
         version: view_init.version,

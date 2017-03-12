@@ -1,5 +1,7 @@
 import Vue from 'vue';
 import { mapState } from 'vuex';
+import axios from 'axios';
+
 import store from './store';
 
 import TwoStepsSelection from './components/TwoStepsSelection.vue';
