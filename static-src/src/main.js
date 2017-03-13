@@ -1,35 +1,18 @@
 import Vue from 'vue';
-import { mapState } from 'vuex';
 import axios from 'axios';
 
 import store from './store';
 
-import TwoStepsSelection from './components/TwoStepsSelection.vue';
-import SubtitlesList from './components/SubtitlesList.vue';
-import VersionCreator from './components/VersionCreator.vue';
+import App from './components/App.vue';
 
 window.ytts = {};
 
     Vue.prototype.$http = axios;
     
     window.vYttsApp = new Vue({
-        components: {
-            "ytts-twostepsselection": TwoStepsSelection,
-            "ytts-subtitles": SubtitlesList,
-            "ytts-versioncreator": VersionCreator,
-        },
         el: "#yttsApp",
         store,
-        computed: mapState({
-            loadedVersion: 'version',
-            loadedVideo: 'video',
-            availableVersions: 'availableVersions',
-        }),
-        methods: {
-            loadVersion: function (versionName) {
-                this.$store.dispatch('loadSubtitles', versionName);
-            }
-        }
+        render: h => h(App),
     });
 
     // Youtube iFrame API loading
