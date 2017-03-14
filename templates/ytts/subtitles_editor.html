@@ -9,7 +9,7 @@
                 isDefault: {{ subtitles.is_default_version|yesno:"true,false" }},
                 version: "{{ subtitles.version }}",
                 versions: {{ all_versions|safe }},
-                video: "{{ video_id }}"
+                video: "{{ video_id }}",
             };
         </script>
         <script src="{% static "ytts/bundle.js" %}" defer></script>
