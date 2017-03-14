@@ -14,6 +14,10 @@ Django application to write subtitles for Youtube videos through the Youtube Pla
 ### How to set up backend (Python + Django) ###
 https://docs.djangoproject.com/en/1.10/intro/install/
 
+In the site's directory, after running the db migration, start the local dev server:
+```
+python manage.py runserver
+```
 ### How to build the frontend JS bundles ###
 https://webpack.js.org/guides/installation/
 
