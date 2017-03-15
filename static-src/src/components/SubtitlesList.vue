@@ -6,7 +6,7 @@
             <a href="" id="subtitleControlDownload" download="subtitles.srt" v-on:click="downloadSubtitles">DL (SubRip)</a>
         </div>
         <div id="subtitles">
-            <ytts-subtitle v-for="subtitle in subtitles" :subtitle="subtitle"></ytts-subtitle>
+            <ytts-subtitle v-for="subtitle in subtitles" :subtitle="subtitle" :key="subtitle.subtitle"></ytts-subtitle>
         </div>
         <div id="savingFeedback" v-if="isSaving">Saving...</div>        
     </div>
