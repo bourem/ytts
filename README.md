@@ -28,6 +28,6 @@ npm run dev
 ```
 
 ### Other ###
-Heroku instance (very far behind HEAD): https://ytts.herokuapp.com/
+Heroku instance (very far behind HEAD): https://ytts.herokuapp.com/ytts/jNQXAC9IVRw/edit/
 
 Trello: https://trello.com/b/f9qfmtTk/ytts
