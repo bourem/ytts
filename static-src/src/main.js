@@ -44,6 +44,7 @@ window.ytts = {};
 
     var activeLineTimer, isLineTimerActive = false;
     // Big switch on player state change.
+
     function onPlayerStateChange(event) {
         switch(event.data){
             case YT.PlayerState.PLAYING:
@@ -58,7 +59,6 @@ window.ytts = {};
                                 ytts.displaySubtitlesAt(player.getCurrentTime());
                             }, 
                             200);
-                    
                     isLineTimerActive = true;
                 }
                 break;
@@ -80,6 +80,7 @@ window.ytts = {};
         if(s<10) { s = "0"+s;}
         return h+":"+m+":"+s.replace(".", ",");
     }
+
     function timeToSeconds(t) {
         var [h, m, s] = t.split(":");
         return parseInt(h)*3600 + parseInt(m)*60 + parseFloat(s.replace(",", "."));
@@ -98,10 +99,12 @@ window.ytts = {};
         ev.dataTransfer.setData("text/plain", "draggedSubtitle");
         ev.dataTransfer.dropEffect = "copy";
     };
+
     ytts.dragover_handler = function(ev) {
         ev.preventDefault();
         ev.dataTransfer.dropEffect = "move";
     };
+
     ytts.drop_handler = function(ev) {
         ev.preventDefault();
         if (ev.dataTransfer.getData("text") == "draggedSubtitle") {
@@ -120,10 +123,11 @@ window.ytts = {};
 
     // Progress bar
     var tsBarNow = document.getElementById("timestampBarNow");
-    ytts.setCursorPercentage = function(percentage) {
+    ytts.setCursorPercentage = function (percentage) {
         tsBarNow.style.left = percentage + "%";
     };
-    ytts.setCursorTime = function(time) {
+
+    ytts.setCursorTime = function (time) {
         seconds = timeToSeconds(time);
         tsBarNow.style.left = seconds*100/videoLength + "%";
         player.playVideo();
@@ -131,7 +135,8 @@ window.ytts = {};
         player.pauseVideo();
         ytts.displaySubtitlesAt(seconds);
     };
-    ytts.setCursorAtSubtitle = function(ev) {
+
+    ytts.setCursorAtSubtitle = function (ev) {
         var subtitleStart = ev.target.parentNode.querySelector("[data-subtitlestart]").value;
         if (!subtitleStart) {
             subtitleStart = "00:00:00";
@@ -139,45 +144,45 @@ window.ytts = {};
         ytts.setCursorTime(subtitleStart);
     };
 
-    ytts.displaySubtitlesAt = function(seconds) {
-        var lines = ytts.getActiveLines(seconds),
+    ytts.displaySubtitlesAt = function (seconds) {
+        const lines = ytts.getActiveLines(seconds),
             activeLine = document.getElementById("activeLine");
         ytts.unhighlightSubtitles();
-        if(lines.length === 0) {
+        if (lines.length === 0) {
             activeLine.innerHTML = "";
             return false;
-        } else if(lines.length === 1) {
+        } else if (lines.length === 1) {
             activeLine.innerHTML = lines[0].querySelector("[data-subtitletext]").value;
             ytts.highlightSubtitle(lines);
             return true;
-        } else if(lines > 1) {
+        } else if (lines > 1) {
             ytts.highlightSubtitle(lines);
             activeLine.innerHTML = "subtitles conflict";
             return false;
         }
     };
 
-    ytts.getSubtitleNodes = function() {
+    ytts.getSubtitleNodes = function () {
         return document.getElementById("subtitles").querySelectorAll("[data-subtitle='true']");
     };
 
-    ytts.highlightSubtitle = function(subtitles) {
-        for(sub of subtitles) {
+    ytts.highlightSubtitle = function (subtitles) {
+        for (let sub of subtitles) {
             sub.className = sub.className.replace(/[ ]?highlightedSubtitle/, "") + " highlightedSubtitle";
         }
     };
 
-    ytts.unhighlightSubtitles = function() {
-        var subs = ytts.getSubtitleNodes();
-        for(sub of subs) {
+    ytts.unhighlightSubtitles = function () {
+        const subs = ytts.getSubtitleNodes();
+        for (let sub of subs) {
             sub.className = sub.className.replace(/[ ]?highlightedSubtitle/, "");
         }
     };
 
-    ytts.getActiveLines = function(seconds) {
-        var subs = document.getElementById("subtitles").querySelectorAll("[data-subtitle='true']");
+    ytts.getActiveLines = function (seconds) {
+        const subs = document.getElementById("subtitles").querySelectorAll("[data-subtitle='true']");
         var activeLines = [], tmpLine, tmpTimeStart, tmpTimeStop;
-        for(var i=0; i<subs.length; i++) {
+        for (var i=0; i<subs.length; i++) {
             tmpLine = subs[i];
             tmpTimeStart = tmpLine.querySelector("[data-subtitlestart]").value;
             tmpTimeStop = tmpLine.querySelector("[data-subtitlestop]").value;
@@ -190,5 +195,3 @@ window.ytts = {};
         }
         return activeLines;
     };
-
-
