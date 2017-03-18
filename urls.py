@@ -16,4 +16,5 @@ urlpatterns = [
     url(r'^(?P<video_id>[a-zA-Z0-9_=&]+)/save/$', 
         views.subtitles_saver, 
         name='subtitles_saver'),
+    url(r'', views.default_view, name='default_view'),
 ]

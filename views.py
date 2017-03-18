@@ -158,3 +158,6 @@ def subtitles_loader(request, video_id):
 
 def is_valid_subtitles(subtitles):
     return True
+
+def default_view(request):
+    return render(request, 'ytts/default_view.html', {})
