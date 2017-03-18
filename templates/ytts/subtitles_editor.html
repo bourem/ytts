@@ -10,6 +10,10 @@
                 version: "{{ subtitles.version }}",
                 versions: {{ all_versions|safe }},
                 video: "{{ video_id }}",
+                urls: {
+                    'save': "{% url 'ytts:subtitles_saver' 0 %}",
+                    'load': "{% url 'ytts:subtitles_loader' 0 %}",
+                },
             };
         </script>
         <script src="{% static "ytts/bundle.js" %}" defer></script>

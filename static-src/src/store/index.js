@@ -20,7 +20,9 @@ export default new Vuex.Store({
         availableVersions: view_init.versions,
         csrftoken: getCookie('csrftoken'),
         isSaving: false,
-        lastSaveTime: null
+        lastSaveTime: null,
+        url_load: view_init.urls.load,
+        url_save: view_init.urls.save,
     },
     mutations,
     actions,
