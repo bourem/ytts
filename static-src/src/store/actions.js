@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 export const loadSubtitles = ({ state, commit }, versionName) => {
-    axios.get(state.url_load.replace(0, state.video), {
+    axios.get(state.url_load.replace('{0}', state.video), {
         params: {
             version_name: versionName,
         },
@@ -18,7 +18,7 @@ export const loadSubtitles = ({ state, commit }, versionName) => {
 export const saveSubtitles = ({ state, commit }) => {
     return new Promise((resolve, reject) => {
         commit('savingStarted');
-        let url = state.url_save.replace(0, state.video);
+        let url = state.url_save.replace('{0}', state.video);
         axios.post(url,
             'subtitles_json=' + JSON.stringify(state.subtitles) + '&version_name=' + state.version,
             {

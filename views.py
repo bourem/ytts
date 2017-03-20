@@ -1,10 +1,13 @@
 from django.shortcuts import render
 from django.http import HttpResponse, Http404, JsonResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django.core.urlresolvers import reverse
 
 import json
+from urllib.parse import unquote
 
 from .models import *
+
 
 def get_subtitles_from_video(
         video_id, 
@@ -38,9 +41,11 @@ def get_subtitles_from_video(
     # Then take one of the available subtitles
     return subs[0]
 
+
 def get_subtitles_versions(video_id):
     return Subtitles.objects.values_list('version_name', 
             flat=True).filter(video__video_id=video_id)
+
 
 @ensure_csrf_cookie
 def subtitles_editor(request, video_id):
@@ -66,16 +71,19 @@ def subtitles_editor(request, video_id):
     context = {
             'video_id': video_id, 
             'subtitles': subtitles,
-            'all_versions': get_subtitles_versions(video_id)
+            'all_versions': get_subtitles_versions(video_id),
+            'urls': get_edit_urls()
             }
     print(context)
     return render(request, 'ytts/subtitles_editor.html', context)
+
 
 def subtitles_viewer(request, video_id):
     context = {'video_id': video_id, 
             'subtitles': json.loads(get_subtitles_from_video(video_id)\
                     .subtitles_json).get("subtitles")}
     return render(request, 'ytts/subtitles_viewer.html', context)
+
 
 def subtitles_saver(request, video_id):
     if request.method != "POST":
@@ -102,6 +110,7 @@ def subtitles_saver(request, video_id):
                 )
     else:
         return JsonResponse({'status':"INVALID_SUBTITLES", 'comment':""})
+
 
 def save_subtitles(subtitles, video_id, version_name):
     """ Save subtitles on given video and with given version_name """
@@ -156,8 +165,31 @@ def subtitles_loader(request, video_id):
                 json.loads(subs.subtitles_json).get("subtitles"),
                 safe=False)
 
+
 def is_valid_subtitles(subtitles):
     return True
 
+
 def default_view(request):
     return render(request, 'ytts/default_view.html', {})
+
+
+# Caching the reversed edit urls (templated with {\d*}.
+# Used on frontend side (replacing placeholders with relevant values).
+subtitles_loader_url = None
+subtitles_saver_url = None
+
+
+def get_edit_urls():
+    global subtitles_loader_url
+    global subtitles_saver_url
+    if subtitles_loader_url is None:
+        subtitles_loader_url = unquote(str(
+                reverse('ytts:subtitles_loader', args=['{0}'])))
+    if subtitles_saver_url is None:
+        subtitles_saver_url = unquote(str(
+                reverse('ytts:subtitles_saver', args=['{0}'])))
+    return {
+            'load': subtitles_loader_url,
+            'save': subtitles_saver_url
+        }
