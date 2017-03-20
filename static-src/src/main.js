@@ -1,13 +1,9 @@
 import Vue from 'vue';
-import axios from 'axios';
-
 import store from './store';
-
 import App from './components/App.vue';
+import { timeToSeconds } from './utils/utils.js';
 
 window.ytts = {};
-
-//Vue.prototype.$http = axios;
 
 window.vYttsApp = new Vue({
     el: "#yttsApp",
@@ -67,23 +63,6 @@ function onPlayerStateChange(event) {
             clearInterval(activeLineTimer);
 
     }
-}
-
-// Helper function to display seconds (output from YT API)
-// to h:m:s (format for subtitles).
-function secondsToTime(s) {
-    var h = Math.floor(s/3600);
-    if(h<10) { h = "0"+h;}
-    var m = Math.floor((s%3600)/60);
-    if(m<10) { m = "0"+m;}
-    var s = (s%60).toFixed(3);
-    if(s<10) { s = "0"+s;}
-    return h+":"+m+":"+s.replace(".", ",");
-}
-
-function timeToSeconds(t) {
-    var [h, m, s] = t.split(":");
-    return parseInt(h)*3600 + parseInt(m)*60 + parseFloat(s.replace(",", "."));
 }
 
 // Drag events handlers for the subtitles.

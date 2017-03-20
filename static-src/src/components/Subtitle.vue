@@ -12,6 +12,8 @@
 </template>
 
 <script>
+import { secondsToTime } from '../utils/utils.js';
+
 export default {
     props: ['subtitle'],
     data: function () {
