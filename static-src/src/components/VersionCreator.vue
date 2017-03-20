@@ -25,11 +25,11 @@ export default {
         createVersion: function () {
             var isClone = this.isClone;
             this.$store.dispatch(
-                    'createSubtitles', 
-                    {
-                        version: this.newVersion, 
-                        isClone: this.isClone
-                    }
+                'createSubtitles', 
+                {
+                    version: this.newVersion, 
+                    isClone: this.isClone
+                }
             );
         }
     }

@@ -32,7 +32,6 @@ export const saveSubtitles = ({ state, commit }) => {
                 if (response.status == "OK") {
                     commit('updateLastSave');
                 }
-                console.log(response);
                 resolve();
             });
     });
