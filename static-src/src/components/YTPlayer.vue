@@ -63,7 +63,6 @@ export default {
         },
         onPlayerStateChange: function (event) {
             console.log(event.data);
-            // Big switch on player state change.
             switch(event.data){
                 case YT.PlayerState.PLAYING:
                     this.timeRefreshTimer = setInterval(

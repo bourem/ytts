@@ -21,12 +21,12 @@ export default {
     },
     methods: {
         setStart: function() {
-            var startTimestamp = secondsToTime(player.getCurrentTime());
+            var startTimestamp = secondsToTime(this.$store.state.videoCurrentTime);
             this.subtitle.start = startTimestamp;
         },
         setStop: function() {
-            var startTimestamp = secondsToTime(player.getCurrentTime());
-            this.subtitle.stop = startTimestamp;
+            var stopTimestamp = secondsToTime(this.$store.state.videoCurrentTime);
+            this.subtitle.stop = stopTimestamp;
         }
     }
 }
