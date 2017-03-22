@@ -13,20 +13,21 @@
             <span slot="select-button-text">Load version</span>
         </ytts-twostepsselection>
         
-        <span class="warning">If you decide to load another version the current work will be lost</span>
+        <span class="warning">
+            If you decide to load another version the current work will be lost
+        </span>
 
         <ytts-versioncreator></ytts-versioncreator>
     
     </div>
 
-    <!--div id="ytplayer" :data-initvideoid="loadedVideo"></div-->
     <ytts-ytplayer></ytts-ytplayer>
 
     <div id="timestampBar">
         <div id="timestampBarNow"></div>
     </div>
 
-    <div id="activeLine"></div>
+    <ytts-livesubtitle></ytts-livesubtitle>
 
     <ytts-subtitles></ytts-subtitles>
 </div>
@@ -39,6 +40,7 @@ import TwoStepsSelection from './TwoStepsSelection.vue';
 import SubtitlesList from './SubtitlesList.vue';
 import VersionCreator from './VersionCreator.vue';
 import YTPlayer from './YTPlayer.vue';
+import LiveSubtitle from './LiveSubtitle.vue';
 
 export default {
     name: 'app',
@@ -47,6 +49,7 @@ export default {
         "ytts-subtitles": SubtitlesList,
         "ytts-versioncreator": VersionCreator,
         "ytts-ytplayer": YTPlayer,
+        "ytts-livesubtitle": LiveSubtitle,
     },
     computed: mapState({
         loadedVersion: 'version',

@@ -26,7 +26,7 @@ export default {
         },
         time: function (val, oldVal) { 
             this.$store.commit('updateCurrentTime', {
-                newCurrentTime: val
+                time: val
             });
         }
     },
@@ -69,8 +69,6 @@ export default {
                     this.timeRefreshTimer = setInterval(
                         function(){
                             this.time = this.player.getCurrentTime();
-                            ytts.displaySubtitlesAt(
-                                this.player.getCurrentTime());
                         }.bind(this), 
                         200);
                     break;

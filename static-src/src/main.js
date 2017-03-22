@@ -71,24 +71,6 @@ ytts.setCursorAtSubtitle = function (ev) {
     ytts.setCursorTime(subtitleStart);
 };
 
-ytts.displaySubtitlesAt = function (seconds) {
-    const lines = ytts.getActiveLines(seconds),
-        activeLine = document.getElementById("activeLine");
-    ytts.unhighlightSubtitles();
-    if (lines.length === 0) {
-        activeLine.innerHTML = "";
-        return false;
-    } else if (lines.length === 1) {
-        activeLine.innerHTML = lines[0].querySelector("[data-subtitletext]").value;
-        ytts.highlightSubtitle(lines);
-        return true;
-    } else if (lines > 1) {
-        ytts.highlightSubtitle(lines);
-        activeLine.innerHTML = "subtitles conflict";
-        return false;
-    }
-};
-
 ytts.getSubtitleNodes = function () {
     return document.getElementById("subtitles").querySelectorAll("[data-subtitle='true']");
 };
@@ -104,21 +86,4 @@ ytts.unhighlightSubtitles = function () {
     for (let sub of subs) {
         sub.className = sub.className.replace(/[ ]?highlightedSubtitle/, "");
     }
-};
-
-ytts.getActiveLines = function (seconds) {
-    const subs = document.getElementById("subtitles").querySelectorAll("[data-subtitle='true']");
-    var activeLines = [], tmpLine, tmpTimeStart, tmpTimeStop;
-    for (var i=0; i<subs.length; i++) {
-        tmpLine = subs[i];
-        tmpTimeStart = tmpLine.querySelector("[data-subtitlestart]").value;
-        tmpTimeStop = tmpLine.querySelector("[data-subtitlestop]").value;
-        if(tmpTimeStart!="" && tmpTimeStop!=""
-           && timeToSeconds(tmpTimeStart)<=seconds
-           && timeToSeconds(tmpTimeStop)>=seconds
-           ) {
-            activeLines.push(tmpLine);
-        }
-    }
-    return activeLines;
 };
