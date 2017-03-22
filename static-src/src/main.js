@@ -5,65 +5,13 @@ import { timeToSeconds } from './utils/utils.js';
 
 window.ytts = {};
 
+ytts.store = store;
+
 window.vYttsApp = new Vue({
     el: "#yttsApp",
     store,
     render: h => h(App),
 });
-
-// Youtube iFrame API loading
-var tag = document.createElement('script');
-tag.src = "https://www.youtube.com/iframe_api";
-var firstScriptTag = document.getElementsByTagName('script')[0];
-firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
-// Youtube video player control object
-var player, videoLength;
-
-// Automatically called when Youtube iFrame API loaded.
-// Attaching to window for the API to see it.
-window.onYouTubeIframeAPIReady = function() {
-    player = new YT.Player('ytplayer', {
-        //height: '390',
-        //width: '640',
-        videoId: view_init.video,
-        events: {
-            'onReady': onPlayerReady,
-            'onStateChange': onPlayerStateChange
-        }
-    });
-}
-
-function onPlayerReady(event) {
-    videoLength = event.target.getDuration();
-}
-
-var activeLineTimer, isLineTimerActive = false;
-// Big switch on player state change.
-
-function onPlayerStateChange(event) {
-    switch(event.data){
-        case YT.PlayerState.PLAYING:
-            // TODO: PLAYING events are called repeatedly when
-            // the video is playing. We should analyze how
-            // often it is fired. Might be better to call 
-            // displayActiveLine for each PLAYING event, 
-            // instead of using setInterval.
-            if(!isLineTimerActive) {
-                activeLineTimer = setInterval(
-                        function(){
-                            ytts.displaySubtitlesAt(player.getCurrentTime());
-                        }, 
-                        200);
-                isLineTimerActive = true;
-            }
-            break;
-        default:
-            isLineTimerActive = false;
-            clearInterval(activeLineTimer);
-
-    }
-}
 
 // Drag events handlers for the subtitles.
 // Would have preferred to use x-moz-node to drag the DOM node,

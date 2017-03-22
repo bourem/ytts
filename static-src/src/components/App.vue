@@ -19,7 +19,8 @@
     
     </div>
 
-    <div id="ytplayer" :data-initvideoid="loadedVideo"></div>
+    <!--div id="ytplayer" :data-initvideoid="loadedVideo"></div-->
+    <ytts-ytplayer></ytts-ytplayer>
 
     <div id="timestampBar">
         <div id="timestampBarNow"></div>
@@ -37,6 +38,7 @@ import { mapState } from 'vuex';
 import TwoStepsSelection from './TwoStepsSelection.vue';
 import SubtitlesList from './SubtitlesList.vue';
 import VersionCreator from './VersionCreator.vue';
+import YTPlayer from './YTPlayer.vue';
 
 export default {
     name: 'app',
@@ -44,6 +46,7 @@ export default {
         "ytts-twostepsselection": TwoStepsSelection,
         "ytts-subtitles": SubtitlesList,
         "ytts-versioncreator": VersionCreator,
+        "ytts-ytplayer": YTPlayer,
     },
     computed: mapState({
         loadedVersion: 'version',

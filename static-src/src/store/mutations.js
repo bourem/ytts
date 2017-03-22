@@ -20,6 +20,12 @@ export const savingStarted = (state) => {
 export const savingStopped = (state) => {
     state.isSaving = false;
 };
-export const updateLastSave = () => {
+export const updateLastSave = (state) => {
     state.lastSaveTime = Date.now();
+};
+export const updateCurrentTime = (state, payload) => {
+    state.videoCurrentTime = payload.time;
+};
+export const setVideoTotalTime = (state, payload) => {
+    state.videoTotalTime = payload.time;
 };
