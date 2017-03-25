@@ -5,8 +5,6 @@ import { timeToSeconds } from './utils/utils.js';
 
 window.ytts = {};
 
-ytts.store = store;
-
 window.vYttsApp = new Vue({
     el: "#yttsApp",
     store,
@@ -69,21 +67,4 @@ ytts.setCursorAtSubtitle = function (ev) {
         subtitleStart = "00:00:00";
     }
     ytts.setCursorTime(subtitleStart);
-};
-
-ytts.getSubtitleNodes = function () {
-    return document.getElementById("subtitles").querySelectorAll("[data-subtitle='true']");
-};
-
-ytts.highlightSubtitle = function (subtitles) {
-    for (let sub of subtitles) {
-        sub.className = sub.className.replace(/[ ]?highlightedSubtitle/, "") + " highlightedSubtitle";
-    }
-};
-
-ytts.unhighlightSubtitles = function () {
-    const subs = ytts.getSubtitleNodes();
-    for (let sub of subs) {
-        sub.className = sub.className.replace(/[ ]?highlightedSubtitle/, "");
-    }
 };

@@ -21,7 +21,6 @@ export default {
                 {
                     videoId: val,
                     startSeconds: 0,
-                    endSeconds: 0
                 });
         },
         time: function (val, oldVal) { 
@@ -31,24 +30,21 @@ export default {
         }
     },
     beforeCreate: function () {
-        // Youtube iFrame API loading
+        // Automatically called when Youtube iFrame API has been loaded.
+        // Making it global for the API to see it.
+        window.onYouTubeIframeAPIReady = function() {
+            this.initPlayer();
+        }.bind(this);
+
+        // Youtube iFrame API load
         var tag = document.createElement('script');
         tag.src = "https://www.youtube.com/iframe_api";
         var firstScriptTag = document.getElementsByTagName('script')[0];
         firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
-        // Automatically called when Youtube iFrame API loaded.
-        // Attaching to window for the API to see it.
-        window.onYouTubeIframeAPIReady = function() {
-            this.initPlayer();
-        }.bind(this);
     },
     methods: {
         initPlayer: function () {
-            console.log(this.video);
             this.player = new YT.Player('ytplayer', {
-                //height: '390',
-                //width: '640',
                 videoId: this.video,
                 events: {
                     'onReady': this.onPlayerReady,
@@ -62,7 +58,6 @@ export default {
             });
         },
         onPlayerStateChange: function (event) {
-            console.log(event.data);
             switch(event.data){
                 case YT.PlayerState.PLAYING:
                     this.timeRefreshTimer = setInterval(
@@ -73,7 +68,6 @@ export default {
                     break;
                 default:
                     clearInterval(this.timeRefreshTimer);
-
             }
         }
     }
