@@ -22,11 +22,7 @@ export default {
     computed: {
         isCurrentSubtitle () {
             const subs = this.$store.getters.currentSubtitles;
-            if (subs.indexOf(this.subtitle) >= 0) {
-                return true;
-            } else {
-                return false;
-            }
+            return (subs.indexOf(this.subtitle) >= 0);
         }
     },
     methods: {
