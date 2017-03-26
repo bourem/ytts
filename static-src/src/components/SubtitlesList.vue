@@ -26,7 +26,11 @@ export default {
     }),
     methods: {
         addSubtitle: function () {
-            this.$store.commit('addSubtitle');
+            this.$store.commit('addSubtitle', {
+                subtitle: "",
+                start: "",
+                stop: ""
+            });
         },
         saveSubtitles: function () {
             this.$store.dispatch('saveSubtitles');

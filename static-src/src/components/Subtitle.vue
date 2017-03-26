@@ -1,9 +1,9 @@
 <template>
     <div class="subtitle" v-bind:class="{ currentSubtitle: isCurrentSubtitle }">
         <div data-subtitleinsert="before" draggable="true" ondragover="ytts.dragover_handler(event)" ondrop="ytts.drop_handler(event)" ondragstart="ytts.dragstartSubtitle(event)"></div>
-        <textarea data-subtitletext v-model="subtitle.subtitle"></textarea>
-        <input type="text" data-subtitlestart v-model="subtitle.start" />
-        <input type="text" data-subtitlestop v-model="subtitle.stop" />
+        <textarea data-subtitletext placeholder="Subtitle content" v-model="subtitle.subtitle"></textarea>
+        <input type="text" placeholder="hh:mm:ss,sss" data-subtitlestart v-model="subtitle.start" />
+        <input type="text" placeholder="hh:mm:ss,sss" data-subtitlestop v-model="subtitle.stop" />
         <button v-on:click="setStart">Start here</button>
         <button v-on:click="setStop">Stop here</button>
         <button onclick="ytts.setCursorAtSubtitle(event)">Position in Video</button>

@@ -14,9 +14,10 @@ function getCookie(name) {
     return cookieValue;
 }
 
-// Helper function to display seconds (output from YT API)
-// to h:m:s (format for subtitles).
 function secondsToTime(s) {
+    /* Helper function to display seconds (output from YT API)
+     to hh:mm:ss,sss (format for subtitles).
+    */
     var h = Math.floor(s/3600);
     if(h<10) { h = "0"+h;}
     var m = Math.floor((s%3600)/60);
@@ -27,8 +28,15 @@ function secondsToTime(s) {
 }
 
 function timeToSeconds(t) {
-    var [h, m, s] = t.split(":");
-    return parseInt(h)*3600 + parseInt(m)*60 + parseFloat(s.replace(",", "."));
+    try {
+        var [h, m, s] = t.split(":");
+        s = s.replace(",", ".");
+        return parseInt(h)*3600 + parseInt(m)*60 + parseFloat(s);
+    } catch(e) {
+        if (e instanceof TypeError) {
+            return NaN;
+        }
+    }
 }
 
 
