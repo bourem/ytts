@@ -14,6 +14,7 @@ def get_subtitles_from_video(
         version_name=None, 
         version_strict=False):
     """ Return a subtitles version attached to this video_id.
+    
     Order of preference is: same version_name, default
     subtitles, first subtitles from DB.
     Return None if no subtitles found.
@@ -43,15 +44,26 @@ def get_subtitles_from_video(
 
 
 def get_subtitles_versions(video_id):
+    """ Return a list of all existing subtitles versions linked 
+    to this video.
+    """
     return Subtitles.objects.values_list('version_name', 
             flat=True).filter(video__video_id=video_id)
 
 
 @ensure_csrf_cookie
 def subtitles_editor(request, video_id):
+    """ Editor view: display existing subtitles versions for the given 
+    video for editing purpose.
+
+    If no versions exist for the given video, a new version will be 
+    automatically created, with an empty subtitles list and the name 
+    'default'.
+    """
     version_name = request.GET.get('version', None)
     subs = get_subtitles_from_video(video_id, version_name)
     subtitles = {}
+    # If some subtitles were found, return them.
     if subs is not None:
         subtitles = {
                     'subtitles': json.loads(subs.subtitles_json)\
@@ -59,6 +71,7 @@ def subtitles_editor(request, video_id):
                     'is_default_version': subs.is_default_version,
                     'version': subs.version_name
                     }
+    # If no subtitles could be found, create some.
     else:
         if version_name is None:
             version_name = "default"
@@ -79,13 +92,24 @@ def subtitles_editor(request, video_id):
 
 
 def subtitles_viewer(request, video_id):
-    context = {'video_id': video_id, 
+    """ Display view: where the user can see the subtitles for the given 
+    video, in read-only mode.
+    """
+    context = {
+            'video_id': video_id, 
             'subtitles': json.loads(get_subtitles_from_video(video_id)\
-                    .subtitles_json).get("subtitles")}
+                    .subtitles_json).get("subtitles")
+            }
     return render(request, 'ytts/subtitles_viewer.html', context)
 
 
 def subtitles_saver(request, video_id):
+    """ Save endpoint view: where subtitles versions can be submitted to be
+    saved.
+
+    Return a response with status OK, BAD_FORMAT, MISSING_PARAMETER,
+    or INVALID_SUBTITLES, as well as some explanatory comment.
+    """
     if request.method != "POST":
         raise Http404("Only POST method allowed here.")
     try:
@@ -102,18 +126,21 @@ def subtitles_saver(request, video_id):
         version_name = request.POST['version_name']
     except KeyError:
         return JsonResponse({
-            'status':"BAD_FORMAT",
-            'comment':"missing version name"})
+            'status':"MISSING_PARAMETER",
+            'comment':"Missing version_name parameter"})
     if is_valid_subtitles(subs_json):
-        return JsonResponse(
-                save_subtitles(subs_json, video_id, version_name)
-                )
+        save_status = save_subtitles(subs_json, video_id, version_name)
+        return JsonResponse({'status':"OK", 'comment':save_status})
     else:
         return JsonResponse({'status':"INVALID_SUBTITLES", 'comment':""})
 
 
 def save_subtitles(subtitles, video_id, version_name):
-    """ Save subtitles on given video and with given version_name """
+    """ Save subtitles on given video and with given version_name.
+    
+    Return 'OVERRIDEN' if the save updates an existing version,
+    'NEW' if it creates a brand new one.
+    """
     # Grab video. If Video does not exist then create.
     video = Video.objects.filter(video_id = video_id)
     if video.count() == 0:
@@ -126,7 +153,6 @@ def save_subtitles(subtitles, video_id, version_name):
             video=video, 
             version_name=version_name)
     sub_len = subs.count()
-
     # Save subtitles. If Subtitle exists then override, else create.
     if sub_len > 0:
         subs = subs.get()
@@ -135,7 +161,7 @@ def save_subtitles(subtitles, video_id, version_name):
             "subtitles": subtitles
             })
         subs.save()
-        return {'status':"OK", 'comment':"OVERRIDEN"}
+        return "OVERRIDEN"
     elif sub_len == 0:
         subs = Subtitles(
                 video=video, 
@@ -149,10 +175,15 @@ def save_subtitles(subtitles, video_id, version_name):
         if video.default_subtitles is None:
             video.default_subtitles = subs
             video.save()
-        return {'status':"OK", 'comment':"NEW"}
+        return "NEW"
 
 
 def subtitles_loader(request, video_id):
+    """ Subtitles load endpoint view.
+
+    Return a subtitles version attached to the given video. A version_name
+    can be specified in the request's version_name parameter.
+    """
     version_name = request.GET.get('version_name', None)
     subs = get_subtitles_from_video(
             video_id,
@@ -167,10 +198,16 @@ def subtitles_loader(request, video_id):
 
 
 def is_valid_subtitles(subtitles):
+    """ Check if the given subtitles are valid.
+
+    No check is actually done at the moment, this function always returns 
+    True.
+    """
     return True
 
 
 def default_view(request):
+    """ A default landing page view. """
     return render(request, 'ytts/default_view.html', {})
 
 
@@ -181,6 +218,11 @@ subtitles_saver_url = None
 
 
 def get_edit_urls():
+    """ Return a dict with the save and load URLs, used in the editor view.
+
+    The /{[0-9]+}/ pattern is used in place of arguments: the appropriate 
+    arguments should be set up on the frontend.
+    """
     global subtitles_loader_url
     global subtitles_saver_url
     if subtitles_loader_url is None:
